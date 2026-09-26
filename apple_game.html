@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة جمع التفاح في الحي - الصف الأول</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #74b9ff;
+            font-family: 'Cairo', sans-serif;
+            overflow: hidden;
+        }
+        /* تعديل الشاشة لتدعم التكبير في وضع ملء الشاشة */
+        canvas {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%2355efc4" width="100" height="100"/><circle fill="%2300b894" cx="50" cy="50" r="45"/><circle fill="%23fff" cx="50" cy="50" r="20"/></svg>');
+            border: 5px solid #0984e3;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 100%;
+            max-height: 70vh;
+        }
+        .ui-panel {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        #score-board { font-size: 24px; font-weight: bold; color: #27ae60; }
+        #message-box { font-size: 20px; color: #e67e22; margin-top: 5px; font-weight: bold;}
+        .instruction { color: #2d3436; font-size: 16px; margin-bottom: 5px;}
+        .btn {
+            background-color: #0984e3; color: white; border: none; padding: 10px 20px;
+            font-size: 16px; border-radius: 8px; cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: 0.3s;
+            margin: 5px;
+        }
+        .btn:hover { background-color: #00cec9; transform: scale(1.05); }
+        .btn-fullscreen { background-color: #8e44ad; }
+        .btn-fullscreen:hover { background-color: #9b59b6; }
+        .hidden { display: none !important; }
+        .top-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- زر ملء الشاشة -->
+    <div class="top-controls">
+        <button class="btn btn-fullscreen" onclick="toggleFullScreen()">تَكْبِير الشَّاشَة 🔲</button>
+    </div>
+
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <div class="ui-panel" id="start-screen">
+        <div>
+            <div class="instruction">👋 أهلاً بكم في لعبتنا الجميلة!</div>
+            <div style="font-size: 24px; color: #0984e3;">🍎 جَمْعُ التُّفَّاحِ لِمَرَافِقِ الْحَيِّ</div>
+            <div style="font-size: 18px; color: #e67e22; margin-top: 5px;">(استخدم الأسهم ⬅️ ➡️ للتحرك)</div>
+            <div id="message-box"></div>
+        </div>
+        <button class="btn" onclick="startGame()">ابدأ اللعبة ▶️</button>
+    </div>
+
+    <div class="ui-panel hidden" id="game-screen">
+        <div id="question-text" style="font-size: 20px; color: #2d3436; font-weight: bold;">السؤال سيظهر هنا...</div>
+        <div id="score-board">النتيجة: <span id="score">0</span> / 4</div>
+    </div>
+
+    <div class="ui-panel hidden" id="end-screen">
+        <div style="font-size: 24px; font-weight: bold;">انتهت اللعبة!</div>
+        <div id="final-message" style="font-size: 18px; color: #0984e3;"></div>
+        <button class="btn" onclick="startGame()">العب مرة أخرى 🔄</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreSpan = document.getElementById('score');
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const finalMessage = document.getElementById('final-message');
+        const questionText = document.getElementById('question-text');
+        const messageBox = document.getElementById('message-box');
+
+        const TILE_SIZE = 100;
+        const PLAYER_WIDTH = 60;
+        const PLAYER_HEIGHT = 80;
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let playerX = canvas.width / 2 - PLAYER_WIDTH / 2;
+        let playerY = canvas.height - PLAYER_HEIGHT - 10;
+        let playerSpeed = 7;
+        let isRunning = false;
+        let objects = [];
+        let animationFrameId;
+        let playerImage;
+
+        // دالة ملء الشاشة
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`حدث خطأ: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        const questions = [
+            { q: "أُرِيدُ أَنْ أُصَلِّيَ، إِلَى أَيْنَ أَذْهَبُ؟", correct: "المسجد", options: ["المسجد", "المستشفى", "البقالة", "الحديقة"] },
+            { q: "أَنَا مَرِيضٌ، إِلَى أَيْنَ أَذْهَبُ؟", correct: "المركز الصحي", options: ["المركز الصحي", "المدرسة", "المخبز", "الحديقة"] },
+            { q: "أُرِيدُ أَنْ أَتَعَلَّمَ، إِلَى أَيْنَ أَذْهَبُ؟", correct: "المدرسة", options: ["المدرسة", "المسجد", "البقالة", "المركز الصحي"] },
+            { q: "أُرِيدُ شِرَاءَ الْخُبْزِ، إِلَى أَيْنَ أَذْهَبُ؟", correct: "المخبز", options: ["المخبز", "المسجد", "الحديقة", "المركز الصحي"] }
+        ];
+
+        playerImage = new Image();
+        playerImage.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="80"><circle cx="30" cy="15" r="15" fill="%23f1c40f" stroke="%23333" stroke-width="2"/><rect x="15" y="35" width="30" height="40" rx="5" fill="%23e74c3c"/><rect x="5" y="35" width="15" height="35" rx="3" fill="%233498db"/><rect x="40" y="35" width="15" height="35" rx="3" fill="%233498db"/><rect x="20" y="75" width="8" height="5" fill="%23333"/><rect x="32" y="75" width="8" height="5" fill="%23333"/><circle cx="25" cy="10" r="3" fill="%23333"/><circle cx="35" cy="10" r="3" fill="%23333"/><path d="M 20 25 q 10 10 20 0" fill="none" stroke="%23333" stroke-width="2"/></svg>';
+
+        function initGame() {
+            playerX = canvas.width / 2 - PLAYER_WIDTH / 2;
+            score = 0;
+            currentQuestionIndex = 0;
+            scoreSpan.innerText = score;
+            gameScreen.classList.remove('hidden');
+            endScreen.classList.add('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            let q = questions[currentQuestionIndex];
+            questionText.innerText = `🍎 ${q.q}`;
+            createObjects(q.correct);
+        }
+
+        function createObjects(correctAnswer) {
+            objects = [];
+            let q = questions[currentQuestionIndex];
+            let options = [...q.options];
+            options = options.filter(o => o !== correctAnswer);
+            let randomOptions = options.sort(() => 0.5 - Math.random()).slice(0, 3);
+            let allOptions = [correctAnswer, ...randomOptions].sort(() => 0.5 - Math.random());
+
+            for (let i = 0; i < 4; i++) {
+                objects.push({
+                    x: (i * (TILE_SIZE + 40)) + 20,
+                    // جعلنا التفاح يبدأ من مسافة أعلى ليتأخر في الظهور
+                    y: -200 - (i * 120), 
+                    width: 90,
+                    height: 90,
+                    text: allOptions[i],
+                    isCorrect: allOptions[i] === correctAnswer,
+                    // تقليل السرعة لتصبح بطيئة جداً ومناسبة للقراءة
+                    speed: 0.5 + Math.random() * 0.4 
+                });
+            }
+        }
+
+        function updateObjects() {
+            for (let obj of objects) {
+                obj.y += obj.speed;
+                
+                if (playerX < obj.x + obj.width &&
+                    playerX + PLAYER_WIDTH > obj.x &&
+                    playerY < obj.y + obj.height &&
+                    playerY + PLAYER_HEIGHT > obj.y) {
+                    
+                    if (obj.isCorrect) {
+                        score++;
+                        scoreSpan.innerText = score;
+                        messageBox.innerText = "🎉 أَحْسَنْتَ! نَعَمْ!";
+                        messageBox.style.color = "#27ae60";
+                    } else {
+                        messageBox.innerText = "❌ أَوْه! لَيْسَ هَذَا الْمَكَانَ!";
+                        messageBox.style.color = "#e74c3c";
+                    }
+
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                        setTimeout(() => { messageBox.innerText = ""; }, 1500);
+                    } else {
+                        gameOver();
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(playerImage, playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
+
+            for (let obj of objects) {
+                ctx.fillStyle = obj.isCorrect ? '#2ecc71' : '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(obj.x + 45, obj.y + 45, 45, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#8e44ad';
+                ctx.fillRect(obj.x + 40, obj.y - 5, 10, 15);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 18px Cairo'; // كبرنا الخط قليلاً
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(obj.text, obj.x + 45, obj.y + 45);
+            }
+        }
+
+        function gameLoop() {
+            if (!isRunning) return;
+            if (keys['ArrowLeft'] && playerX > 10) playerX -= playerSpeed;
+            if (keys['ArrowRight'] && playerX < canvas.width - PLAYER_WIDTH - 10) playerX += playerSpeed;
+            updateObjects();
+            draw();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        const keys = {};
+        window.addEventListener('keydown', e => { keys[e.key] = true; });
+        window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            endScreen.classList.add('hidden');
+            initGame();
+            isRunning = true;
+            gameLoop();
+        }
+
+        function gameOver() {
+            isRunning = false;
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            let gradeMessage = score === 4 ? "🎉 رَائِعٌ! أَنْتَ بَطَلٌ!" : (score >= 2 ? "👍 أَحْسَنْتَ!" : "💪 حَاوِلْ مَرَّةً أُخْرَى!");
+            finalMessage.innerHTML = `لَقَدْ جَمَعْتَ ${score} إِجَابَاتٍ صَحِيحَةً مِنْ ${questions.length}.<br>${gradeMessage}`;
+        }
+
+        startScreen.classList.remove('hidden');
+        gameScreen.classList.add('hidden');
+        endScreen.classList.add('hidden');
+
+    </script>
+</body>
+</html>
