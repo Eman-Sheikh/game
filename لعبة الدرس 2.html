@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة آداب الجوار - الصف الأول</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        /* شاشة البداية والنهاية */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        /* شريط المعلومات العلوي */
+        header {
+            width: 100%;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .score-board, .lives-board {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .score-board span {
+            color: #4CAF50;
+        }
+
+        .lives-board span {
+            color: #e91e63;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        /* منطقة اللعب */
+        #game-container {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* الصناديق الساقطة (السلوكيات) */
+        .falling-item {
+            position: absolute;
+            width: 240px;
+            min-height: 90px;
+            padding: 12px 15px;
+            background: white;
+            border: 3px solid;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            z-index: 5;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .falling-item.good {
+            border-color: #4CAF50;
+            color: #2e7d32;
+            background-color: #e8f5e9;
+        }
+
+        .falling-item.bad {
+            border-color: #f44336;
+            color: #c62828;
+            background-color: `ffebee`;
+        }
+
+        /* الشخصية المتحركة في الأسفل */
+        #player {
+            position: absolute;
+            bottom: 20px;
+            width: 90px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateX(-50%);
+            z-index: 10;
+            transition: left 0.05s linear;
+        }
+
+        .player-head {
+            width: 50px;
+            height: 50px;
+            background: #ffcc80;
+            border-radius: 50%;
+            position: relative;
+            border: 2px solid #333;
+        }
+
+        .player-hair {
+            position: absolute;
+            top: -5px;
+            left: 5px;
+            width: 40px;
+            height: 25px;
+            background: #5d4037;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .player-face {
+            position: absolute;
+            top: 22px;
+            left: 12px;
+            font-size: 16px;
+        }
+
+        .player-body {
+            width: 70px;
+            height: 50px;
+            background: #03a9f4;
+            border-radius: 15px 15px 0 0;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 5px;
+        }
+
+        .player-bag {
+            width: 25px;
+            height: 20px;
+            background: #d7ccc8;
+            border: 2px solid #333;
+            border-radius: 4px;
+        }
+
+        /* توجيهات المساعدة السفلية */
+        .footer-hint {
+            background: rgba(255, 255, 255, 0.8);
+            width: 100%;
+            text-align: center;
+            padding: 8px;
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="overlay">
+        <h1>لعبة آداب الجوار 🏡</h1>
+        <p>مرحباً بابطال الصف الأول! اجمع السلوكيات الصحيحة لجيراننا وتجنب السلوكيات الخاطئة.</p>
+        <p style="font-size: 1.2rem; color: #ffeb3b;">استخدم أزرار الأسهم (اليمين واليسار) أو حرر الفأرة لتحريك الولد.</p>
+        <button class="btn" onclick="startGame()">ابدأ اللعبة</button>
+    </div>
+
+    <!-- شاشة النهاية -->
+    <div id="game-over-screen" class="overlay" style="display: none;">
+        <h1 id="end-title">انتهت اللعبة!</h1>
+        <p id="final-score-text">لقد جمعت: 0 نقطة</p>
+        <button class="btn" onclick="restartGame()">العب مرة أخرى</button>
+    </div>
+
+    <!-- شريط المعلومات -->
+    <header>
+        <div class="game-title">أخلاقنا الجميلة: جيراني ✨</div>
+        <div class="score-board">النُّقَاط: <span id="score">0</span></div>
+        <div class="lives-board">المحاولات المتبقية: <span id="lives">3</span></div>
+    </header>
+
+    <!-- مسرح اللعبة -->
+    <div id="game-container">
+        <div id="player">
+            <div class="player-head">
+                <div class="player-hair"></div>
+                <div class="player-face">😊</div>
+            </div>
+            <div class="player-body">
+                <div class="player-bag"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-hint">استخدم السهم الأيمن والأيسر في لوحة المفاتيح لتحريك الولد ⬅️ ➡️</div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreText = document.getElementById('final-score-text');
+        const endTitle = document.getElementById('end-title');
+
+        let score = 0;
+        let lives = 3;
+        let gameInterval;
+        let spawnInterval;
+        let items = [];
+        let playerX = window.innerWidth / 2;
+        let isPlaying = false;
+
+        const containerWidth = window.innerWidth;
+        const playerWidth = 90;
+
+        // قائمة السلوكيات (صحيحة وخاطئة)
+        const behaviors = [
+            { text: "أَزُورُ جِيرَانِي فِي الْعِيدِ", type: "good" },
+            { text: "أُزْعِجُ جِيرَانِي بِصَوْتِ التِّلْفَازِ", type: "bad" },
+            { text: "تُشَارِكُ سَمِيرَةُ جِيرَانَهَا فِي مُنَاسَبَاتِهِمْ", type: "good" },
+            { text: "أَقْطِفُ وَرْدَةً مِنْ حَدِيقَةِ جِيرَانِي دُونَ اسْتِئْذَانٍ", type: "bad" },
+            { text: "الِابْتِسَامَةُ فِي وَجْهِ الْجَارِ", type: "good" },
+            { text: "مُسَاعَدَةُ الْجَارِ وَإِكْرَامُهُ", type: "good" },
+            { text: "رَميُ النُّفَايَاتِ أَمَامَ بَابِ الْجَارِ", type: "bad" }
+        ];
+
+        // حركة اللاعب بالماوس أو اللمس
+        window.addEventListener('mousemove', (e) => {
+            if (!isPlaying) return;
+            playerX = e.clientX;
+            if (playerX < playerWidth / 2) playerX = playerWidth / 2;
+            if (playerX > window.innerWidth - playerWidth / 2) playerX = window.innerWidth - playerWidth / 2;
+            player.style.left = playerX + 'px';
+        });
+
+        // حركة اللاعب بلوحة المفاتيح
+        let keys = {};
+        window.addEventListener('keydown', (e) => { keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+        function handleKeyboard() {
+            if (!isPlaying) return;
+            const speed = 12;
+            if (keys['ArrowRight'] || keys['d']) {
+                playerX -= speed;
+            }
+            if (keys['ArrowLeft'] || keys['a']) {
+                playerX += speed;
+            }
+            if (playerX < playerWidth / 2) playerX = playerWidth / 2;
+            if (playerX > window.innerWidth - playerWidth / 2) playerX = window.innerWidth - playerWidth / 2;
+            player.style.left = playerX + 'px';
+        }
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            score = 0;
+            lives = 3;
+            scoreDisplay.textContent = score;
+            livesDisplay.textContent = lives;
+            items.forEach(item => item.element.remove());
+            items = [];
+            isPlaying = true;
+
+            gameInterval = setInterval(updateGame, 20);
+            spawnInterval = setInterval(spawnItem, 2500);
+        }
+
+        function spawnItem() {
+            if (!isPlaying) return;
+            const data = behaviors[Math.floor(Math.random() * behaviors.length)];
+            const el = document.createElement('div');
+            el.className = `falling-item ${data.type}`;
+            el.textContent = data.text;
+
+            // تحديد مكان عشوائي آمن ضمن عرض الشاشة
+            const randomX = Math.random() * (window.innerWidth - 260) + 10;
+            el.style.left = randomX + 'px';
+            el.style.top = '-100px';
+
+            gameContainer.appendChild(el);
+            items.push({
+                element: el,
+                x: randomX,
+                y: -100,
+                type: data.type,
+                width: 240,
+                height: 90,
+                speed: 2.2
+            });
+        }
+
+        function updateGame() {
+            handleKeyboard();
+
+            const containerHeight = gameContainer.clientHeight;
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed;
+                item.element.style.top = item.y + 'px';
+
+                // فحص الاصطدام مع اللاعب
+                // إحداثيات اللاعب
+                const playerRect = {
+                    x: playerX - playerWidth / 2,
+                    y: containerHeight - 130,
+                    width: playerWidth,
+                    height: 110
+                };
+
+                // فحص التقاطع
+                if (
+                    item.y + item.height >= playerRect.y &&
+                    item.y <= playerRect.y + playerRect.height &&
+                    item.x + item.width >= playerRect.x &&
+                    item.x <= playerRect.x + playerRect.width
+                ) {
+                    // حدث الاصطدام
+                    if (item.type === 'good') {
+                        score += 10;
+                        scoreDisplay.textContent = score;
+                    } else {
+                        lives -= 1;
+                        livesDisplay.textContent = lives;
+                        if (lives <= 0) {
+                            endGame();
+                        }
+                    }
+                    item.element.remove();
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                // إزالة العنصر إذا تجاوز الشاشة لأسفل
+                if (item.y > containerHeight) {
+                    // إذا سقط سلوك جيد ولم يُلتقط تفقد حياة
+                    if (item.type === 'good') {
+                        lives -= 1;
+                        livesDisplay.textContent = lives;
+                        if (lives <= 0) {
+                            endGame();
+                        }
+                    }
+                    item.element.remove();
+                    items.splice(i, 1);
+                }
+            }
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+            finalScoreText.textContent = `لقد جمعت ${score} نقطة رائعة!`;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function restartGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
