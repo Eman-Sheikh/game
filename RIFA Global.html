@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار تصفية الطالبات - مسابقة RIFA Global | أكاديمية الرواد الدولية</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #2A0835;     /* البنفسجي الباذنجاني الداكن */
+            --secondary-color: #7B2869;   /* البنفسجي المتوسط - الموف */
+            --accent-color: #F3CD05;      /* الأصفر الذهبي الخردلي */
+            --bg-color: #FAF8FC;          /* العاجي الخفيف لراحة العين */
+            --card-bg: #FFFFFF;
+            --text-color: #2A0835;
+            --border-color: #EAD6EC;      /* البنفسجي الرمادي الخافت للفواصل */
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --font-arabic: 'Cairo', 'Tajawal', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-arabic);
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            padding: 40px;
+            border-radius: 16px;
+            border: 8px solid var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .school-name {
+            font-size: 1.4rem;
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        p.subtitle {
+            color: var(--secondary-color);
+            font-size: 15px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--primary-color);
+        }
+
+        input[type="text"], select {
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: var(--font-arabic);
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--accent-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-right: 6px solid var(--accent-color);
+        }
+
+        .question-card {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            transition: all 0.2s ease;
+        }
+
+        .question-card:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .question-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: var(--primary-color);
+            line-height: 1.5;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            font-size: 14px;
+            color: var(--primary-color);
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #EAD6EC;
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--accent-color);
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 35px;
+            transition: all 0.3s;
+            font-family: var(--font-arabic);
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        #result-box {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .result-score {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-status {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+
+        .already-submitted {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #f87171;
+        }
+
+        @media print {
+            body { padding: 0; background: white; }
+            .container { box-shadow: none; border: 4px solid #2A0835; width: 100%; max-width: 100%; }
+            .btn-submit { display: none; }
+            #result-box { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="school-name">أكاديمية الرواد الدولية</div>
+        <h1>اختبار تصفية الطالبات - مسابقة RIFA Global</h1>
+        <p class="subtitle">اختبار موضوعي شامل لتقييم الشغف، التفكير الهندسي، ومهارات العمل الجماعي</p>
+    </header>
+
+    <div id="submission-warning" class="already-submitted" style="display: none;">
+        ⚠️ لقد قمتِ بتقديم هذا الاختبار سابقاً ولا يمكن إعادة المحاولة. تم حفظ نتيجتكِ السابقة أدناه.
+    </div>
+
+    <form id="quiz-form">
+        <!-- بيانات الطالبة -->
+        <div class="info-grid">
+            <div class="form-group">
+                <label for="student-name">اسم الطالبة:</label>
+                <input type="text" id="student-name" required placeholder="أدخلي اسمكِ الكامل">
+            </div>
+            <div class="form-group">
+                <label for="student-class">الصف / الشعبة:</label>
+                <input type="text" id="student-class" required placeholder="مثال: العاشر / أ">
+            </div>
+            <div class="form-group">
+                <label for="preferred-field">المجال المفضل:</label>
+                <select id="preferred-field" required>
+                    <option value="">اختر المجال...</option>
+                    <option value="programming">البرمجة (Programming)</option>
+                    <option value="design">التصميم والميكانيكا (Design & Mechanics)</option>
+                    <option value="management">التوثيق والقيادة (Documentation & Management)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- القسم الأول: صح أو خطأ -->
+        <div class="section-title">القسم الأول: أسئلة صح أم خطأ (5 درجات لكل سؤال)</div>
+
+        <div class="question-card">
+            <div class="question-title">1. تعتمد مسابقات روبوتات كرة القدم (RIFA) على البرمجة والتصميم الميكانيكي والعمل الجماعي معاً وليس على فرد واحد.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf1" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf1" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">2. إذا فشل الحساس في التعرف على الكرة أثناء المباراة، فإن الحل الأسرع هو إعادة تشغيل الروبوت دون فحص الكود أو الحساسات.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf2" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf2" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">3. تصميم روبوت خفيف وسريع يعطي ميزة الهجوم والمناورة السريعة، بينما الروبوت الثقيل يوفر استقراراً وقوة أكبر في الدفاع.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf3" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf3" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">4. عند حدوث خلاف بين عضوات الفريق حول فكرة التصميم، يتم اختيار الفكرة الأفضل عن طريق التجربة العملية واختبار الأداء.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf4" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf4" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">5. التوثيق وكتابة تقارير المشروع ليست مهمة ذات أهمية في المسابقات العالمية ويمكن الاستغناء عنها تماماً.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf5" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf5" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">6. المرونة والهدوء عند تعطل الروبوت مفاجئاً قبل المباراة هي من أهم صفات عضو الفريق الناجح.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf6" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf6" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">7. في البرمجة، استخدام الحلقات التكرارية (Loops) يساعد الروبوت على الاستمرار في البحث عن الكرة طوال وقت المباراة.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf7" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf7" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">8. الالتزام بمواعيد التدريب الأسبوعية يعتبر شرطاً أساسياً للاستمرار في الفريق الأساسي للمسابقة.</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="tf8" value="true" required> صح (✓)</label>
+                <label class="option-label"><input type="radio" name="tf8" value="false"> خطأ (✗)</label>
+            </div>
+        </div>
+
+        <!-- القسم الثاني: اختيار من متعدد -->
+        <div class="section-title">القسم الثاني: الاختيار من متعدد (10 درجات لكل سؤال)</div>
+
+        <div class="question-card">
+            <div class="question-title">1. إذا تعطل الروبوت فجأة قبل بدء المباراة بـ 10 دقائق، التصرف الصحيح والأكثر حرفية هو:</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq1" value="a" required> أ) التوتر والانسحاب من المباراة فوراً.</label>
+                <label class="option-label"><input type="radio" name="mcq1" value="b"> ب) إلقاء اللوم على زميلة الفريق المسؤولة عن البرمجة.</label>
+                <label class="option-label"><input type="radio" name="mcq1" value="c"> ج) التوجه بفحص سريع للبطارية، التوصيلات السلكية، والبرنامج الأساسي مع الفريق بهدوء.</label>
+                <label class="option-label"><input type="radio" name="mcq1" value="d"> د) إعادة بناء الروبوت بالكامل من البداية.</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">2. عند وجود عائق بين الروبوت والكرة، ما هي أفضل طريقة برمجية/هندسية للتعامل مع العائق؟</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq2" value="a" required> أ) استخدام حساس المسافة (Ultrasonic) للالتفاف حول العائق ومتابعة المسار نحو الكرة.</label>
+                <label class="option-label"><input type="radio" name="mcq2" value="b"> ب) زيادة سرعة المحركات للاصطدام بالعائق ودفعه بالقوة.</label>
+                <label class="option-label"><input type="radio" name="mcq2" value="c"> ج) إيقاف تشغيل الروبوت وانتهاء الجولة.</label>
+                <label class="option-label"><input type="radio" name="mcq2" value="d"> د) جعل الروبوت يتحرك للوراء بشكل دائم.</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">3. لو تم إسناد مهمة كتابة التقرير وتوثيق المشروع لكِ بدلاً من البرمجة أو التصميم، ما موقفكِ؟</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq3" value="a" required> أ) أرفض المشاركة في المسابقة كلياً.</label>
+                <label class="option-label"><input type="radio" name="mcq3" value="b"> ب) أترك العمل لزميلاتي وأحضر يوم المباراة فقط.</label>
+                <label class="option-label"><input type="radio" name="mcq3" value="c"> ج) أقوم بتنفيذ البرمجة رغماً عن قرار الفريق.</label>
+                <label class="option-label"><input type="radio" name="mcq3" value="d"> د) أتقبل المهمة وأؤديها بإتقان لأن التوثيق عنصر رئيسي في تقييم الفريق لدى لجنة التحكيم.</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">4. ما هي الفائدة الرئيسية من وجود حساس الألوان أو الضوء في روبوت كرة القدم؟</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq4" value="a" required> أ) تغيير لون أضواء الروبوت لجعل شكله أجمل.</label>
+                <label class="option-label"><input type="radio" name="mcq4" value="b"> ب) تمييز خطوط ملعب المباراة حتى لا يخرج الروبوت خارج حدود الملعب.</label>
+                <label class="option-label"><input type="radio" name="mcq4" value="c"> ج) قياس سرعة دوران العجلات.</label>
+                <label class="option-label"><input type="radio" name="mcq4" value="d"> د) شحن البطارية تلقائياً.</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">5. إذا اختلفتِ مع زميلتكِ حول اختيار تصميم هيكل الروبوت، الحل الأمثل لحسم القرار دون إضاعة الوقت هو:</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq5" value="a" required> أ) التصويت أو إجراء اختبار عملي سريع للتصميمين واختيار الأفضل أداءً.</label>
+                <label class="option-label"><input type="radio" name="mcq5" value="b"> ب) التمسك برأيكِ ورفض التحدث مع زميلتكِ.</label>
+                <label class="option-label"><input type="radio" name="mcq5" value="c"> ج) ترك التصميم بدون كمال والانتظار حتى يوم الجولة.</label>
+                <label class="option-label"><input type="radio" name="mcq5" value="d"> د) الاستغناء عن هيكل الروبوت تماماً.</label>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">6. المعيار الأهم لنجاح الفريق في مسابقات RIFA Global هو:</div>
+            <div class="options-group">
+                <label class="option-label"><input type="radio" name="mcq6" value="a" required> أ) الاعتماد على مهارة شخص واحد فقط داخل الفريق.</label>
+                <label class="option-label"><input type="radio" name="mcq6" value="b"> ب) الإنهاء السريع للتصميم دون تجربته أو اختباره.</label>
+                <label class="option-label"><input type="radio" name="mcq6" value="c"> ج) التركيز على الشكل الخارجي للروبوت فقط.</label>
+                <label class="option-label"><input type="radio" name="mcq6" value="d"> د) التعاون الشامل والتواصل الفعال وتوزيع المهام بحسب نقاط قوة كل عضوة.</label>
+            </div>
+        </div>
+
+        <button type="button" class="btn-submit" id="submit-btn" onclick="calculateScore()">إنهاء الاختبار وتسليم النتيجة</button>
+    </form>
+
+    <!-- صندوق عرض النتيجة -->
+    <div id="result-box">
+        <div class="result-score" id="score-text"></div>
+        <div class="result-status" id="status-text"></div>
+    </div>
+</div>
+
+<script>
+    // التحقق عند تحميل الصفحة مما إذا كانت الطالبة قد قدمت الاختبار سابقاً
+    window.onload = function() {
+        const savedResult = localStorage.getItem('rifa_quiz_submitted');
+        if (savedResult) {
+            const data = JSON.parse(savedResult);
+            disableExamAndShowResult(data.score, data.adviceText, data.bgColor, data.textColor, true);
+        }
+    };
+
+    function calculateScore() {
+        const form = document.getElementById('quiz-form');
+        
+        if (!form.checkValidity()) {
+            alert("يرجى الإجابة عن جميع الأسئلة وتعبئة البيانات قبل التسليم!");
+            form.reportValidity();
+            return;
+        }
+
+        let score = 0;
+
+        const tfAnswers = {
+            tf1: 'true',
+            tf2: 'false',
+            tf3: 'true',
+            tf4: 'true',
+            tf5: 'false',
+            tf6: 'true',
+            tf7: 'true',
+            tf8: 'true'
+        };
+
+        for (let key in tfAnswers) {
+            const selected = form.querySelector(`input[name="${key}"]:checked`);
+            if (selected && selected.value === tfAnswers[key]) {
+                score += 5;
+            }
+        }
+
+        const mcqAnswers = {
+            mcq1: 'c',
+            mcq2: 'a',
+            mcq3: 'd',
+            mcq4: 'b',
+            mcq5: 'a',
+            mcq6: 'd'
+        };
+
+        for (let key in mcqAnswers) {
+            const selected = form.querySelector(`input[name="${key}"]:checked`);
+            if (selected && selected.value === mcqAnswers[key]) {
+                score += 10;
+            }
+        }
+
+        let adviceText = "";
+        let bgColor = "";
+        let textColor = "";
+
+        if (score >= 80) {
+            bgColor = '#dcfce7';
+            textColor = '#15803d';
+            adviceText = "🎉 مبارك عزيزتي الطالبة! أداؤكِ ممتاز جداً وتفكيركِ الهندسي رائع. نوصي بانضمامكِ المباشر إلى (الفريق الأساسي) لمسابقة RIFA Global. واصلي التميز والعمل الجماعي مع فريقكِ!";
+        } else if (score >= 60) {
+            bgColor = '#fef9c3';
+            textColor = '#a16207';
+            adviceText = "👍 أداء جيد جداً عزيزتي! لديكِ شغف جميل وأساسيات قوية. نوصي بانضمامكِ إلى (فريق الاحتياط والدعم)، وننصحكِ بالاستمرار في تطوير مهاراتكِ البرمجية لزيادة فرصتكِ للوصول للفريق الأساسي!";
+        } else {
+            bgColor = '#fee2e2';
+            textColor = '#b91c1c';
+            adviceText = "💡 نصيحة وملاحظة لكِ عزيزتي الطالبة: نشكر شغفكِ ومحاولتكِ الشجاعة! ننصحكِ بالقراءة أكثر عن أساسيات البرمجة وتصميم الروبوتات وتطوير مهارات حل المشكلات، ونتمنى مشاركتكِ معنا بحماس في الدورات والمسابقات القادمة بإذن الله.";
+        }
+
+        // حفظ النتيجة في المتصفح لمنع التكرار
+        const submissionData = {
+            score: score,
+            adviceText: adviceText,
+            bgColor: bgColor,
+            textColor: textColor
+        };
+        localStorage.setItem('rifa_quiz_submitted', JSON.stringify(submissionData));
+
+        disableExamAndShowResult(score, adviceText, bgColor, textColor, false);
+    }
+
+    function disableExamAndShowResult(score, adviceText, bgColor, textColor, isReloaded) {
+        // إخفاء زِر التسليم وتحديد المدخلات لمنع التعديل
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.style.display = 'none';
+
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => input.disabled = true);
+
+        if (isReloaded) {
+            document.getElementById('submission-warning').style.display = 'block';
+        }
+
+        const resultBox = document.getElementById('result-box');
+        const scoreText = document.getElementById('score-text');
+        const statusText = document.getElementById('status-text');
+
+        scoreText.innerText = `النتيجة النهائية: ${score} من 100`;
+        statusText.innerText = adviceText;
+
+        resultBox.style.backgroundColor = bgColor;
+        resultBox.style.color = textColor;
+        resultBox.style.display = 'block';
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
