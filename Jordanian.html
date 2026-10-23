@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتشف ألوان العلم الأردني</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for winning effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+
+        .bouncy {
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        .pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .color-card {
+            transition: all 0.3s ease;
+        }
+
+        .color-card:hover {
+            transform: scale(1.05);
+        }
+
+        .drop-zone {
+            transition: all 0.3s ease;
+            min-height: 55px;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #2563eb;
+            background-color: #dbeafe;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl shadow">
+                    🇯🇴
+                </div>
+                <h1 class="text-xl md:text-2xl font-black text-slate-800">مَكْتَشِفُ أَلْوَانِ الْعَلَمِ</h1>
+            </div>
+            
+            <!-- Progress Steps -->
+            <div class="flex gap-2">
+                <div id="step-dot-1" class="w-8 h-8 rounded-full bg-red-600 text-white font-bold flex items-center justify-center shadow">1</div>
+                <div id="step-dot-2" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 font-bold flex items-center justify-center">2</div>
+                <div id="step-dot-3" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 font-bold flex items-center justify-center">3</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 flex flex-col justify-center items-center">
+
+        <!-- Message Modal/Banner -->
+        <div id="feedback-msg" class="hidden fixed top-20 z-50 px-6 py-3 rounded-2xl shadow-xl text-lg font-bold text-white transition-all transform -translate-y-full"></div>
+
+        <!-- STAGE 1: Color Selection -->
+        <section id="stage-1" class="w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-300 flex flex-col items-center gap-6">
+            <div class="text-center space-y-2">
+                <span class="bg-amber-100 text-amber-800 px-4 py-1 rounded-full text-sm font-bold">المَرْحَلَةُ الأُولَى ⭐️</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">اخْتَرُ أَلْوَانَ عَلَمِ الأُرْدُنِّ الأَرْبَعَةِ:</h2>
+                <p class="text-slate-500 font-medium">اضْغَطْ عَلَى الأَلْوَانِ الصَّحِيحَةِ لِتَجْمَعَهَا فِي السَّلَّةِ!</p>
+            </div>
+
+            <!-- Color Options Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-md my-4">
+                <button onclick="selectColor(this, 'أسود', true)" class="color-card bg-black text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-gray-800 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَسْوَد</span>
+                </button>
+                <button onclick="selectColor(this, 'أصفر', false)" class="color-card bg-yellow-400 text-slate-900 h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-yellow-500 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَصْفَر</span>
+                </button>
+                <button onclick="selectColor(this, 'أبيض', true)" class="color-card bg-white text-slate-800 h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-slate-300 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَبْيَض</span>
+                </button>
+                <button onclick="selectColor(this, 'أزرق', false)" class="color-card bg-blue-500 text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-blue-600 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَزْرَق</span>
+                </button>
+                <button onclick="selectColor(this, 'أخضر', true)" class="color-card bg-emerald-600 text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-emerald-700 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَخْضَر</span>
+                </button>
+                <button onclick="selectColor(this, 'وردي', false)" class="color-card bg-pink-400 text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-pink-500 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>وَرْدِي</span>
+                </button>
+                <button onclick="selectColor(this, 'أحمر', true)" class="color-card bg-red-600 text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-red-700 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>أَحْمَر</span>
+                </button>
+                <button onclick="selectColor(this, 'بني', false)" class="color-card bg-amber-800 text-white h-24 rounded-2xl font-bold text-lg shadow-md border-4 border-amber-900 flex flex-col justify-center items-center gap-1 active:scale-95">
+                    <span>بُنِّي</span>
+                </button>
+            </div>
+
+            <!-- Collected Colors Basket -->
+            <div class="w-full max-w-md bg-amber-50 rounded-2xl p-4 border-2 border-dashed border-amber-300 flex flex-col items-center gap-2">
+                <span class="text-sm font-bold text-amber-800"><i class="fa-solid fa-basket-shopping ml-1"></i> الأَلْوَانُ المَجْمُوعَةُ (<span id="collected-count">0</span> / 4)</span>
+                <div id="basket" class="flex gap-3 min-h-[50px] items-center justify-center flex-wrap">
+                    <span class="text-gray-400 text-sm">اخْتَرِ الأَلْوَانَ الصَّحِيحَةَ...</span>
+                </div>
+            </div>
+
+            <button id="next-1-btn" onclick="goToStage2()" disabled class="w-full max-w-md py-4 bg-gray-300 text-gray-500 text-xl font-bold rounded-2xl shadow transition-all cursor-not-allowed">
+                الإِنْتِقَالُ لِلْمَرْحَلَةِ الثَّانِيَةِ <i class="fa-solid fa-arrow-left mr-2"></i>
+            </button>
+        </section>
+
+        <!-- STAGE 2: Counting Colors -->
+        <section id="stage-2" class="hidden w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-blue-300 flex flex-col items-center gap-6">
+            <div class="text-center space-y-2">
+                <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-bold">المَرْحَلَةُ الثَّانِيَةُ ⭐️⭐️</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">كَمْ عَدَدُ أَلْوَانِ عَلَمِ الأُرْدُنِّ؟</h2>
+                <p class="text-slate-500 font-medium">عُدَّ الأَلْوَانَ ثُمَّ اخْتَرِ الرَّقَمَ الصَّحِيحَ!</p>
+            </div>
+
+            <!-- Display Flag Colors for Counting -->
+            <div class="flex gap-4 justify-center items-center my-4">
+                <div class="w-14 h-14 rounded-2xl bg-black border-4 border-gray-300 shadow-lg flex items-center justify-center text-white font-bold text-xl bouncy">1</div>
+                <div class="w-14 h-14 rounded-2xl bg-white border-4 border-gray-300 shadow-lg flex items-center justify-center text-black font-bold text-xl bouncy" style="animation-delay: 0.1s">2</div>
+                <div class="w-14 h-14 rounded-2xl bg-emerald-600 border-4 border-gray-300 shadow-lg flex items-center justify-center text-white font-bold text-xl bouncy" style="animation-delay: 0.2s">3</div>
+                <div class="w-14 h-14 rounded-2xl bg-red-600 border-4 border-gray-300 shadow-lg flex items-center justify-center text-white font-bold text-xl bouncy" style="animation-delay: 0.3s">4</div>
+            </div>
+
+            <!-- Number Choice Buttons -->
+            <div class="flex gap-4 sm:gap-6 justify-center my-4">
+                <button onclick="checkCount(2, this)" class="w-20 h-20 bg-slate-100 hover:bg-slate-200 border-4 border-slate-300 text-3xl font-black rounded-3xl shadow-lg active:scale-95 transition-all text-slate-700">2</button>
+                <button onclick="checkCount(3, this)" class="w-20 h-20 bg-slate-100 hover:bg-slate-200 border-4 border-slate-300 text-3xl font-black rounded-3xl shadow-lg active:scale-95 transition-all text-slate-700">3</button>
+                <button onclick="checkCount(4, this)" class="w-20 h-20 bg-slate-100 hover:bg-slate-200 border-4 border-slate-300 text-3xl font-black rounded-3xl shadow-lg active:scale-95 transition-all text-slate-700">4</button>
+                <button onclick="checkCount(5, this)" class="w-20 h-20 bg-slate-100 hover:bg-slate-200 border-4 border-slate-300 text-3xl font-black rounded-3xl shadow-lg active:scale-95 transition-all text-slate-700">5</button>
+            </div>
+
+            <button id="next-2-btn" onclick="goToStage3()" disabled class="w-full max-w-md py-4 bg-gray-300 text-gray-500 text-xl font-bold rounded-2xl shadow transition-all cursor-not-allowed">
+                الإِنْتِقَالُ لِلْمَرْحَلَةِ الثَّالِثَةِ <i class="fa-solid fa-arrow-left mr-2"></i>
+            </button>
+        </section>
+
+        <!-- STAGE 3: Flag Puzzle Construction -->
+        <section id="stage-3" class="hidden w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-emerald-300 flex flex-col items-center gap-6">
+            <div class="text-center space-y-2">
+                <span class="bg-emerald-100 text-emerald-800 px-4 py-1 rounded-full text-sm font-bold">المَرْحَلَةُ الثَّالِثَةُ ⭐️⭐️⭐️</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">رَتِّبْ أَلْوَانَ وَأَجْزَاءِ العَلَمِ:</h2>
+                <p class="text-slate-500 font-medium">اضْغَطْ عَلَى الجُزْءِ ثُمَّ اضْغَطْ عَلَى المَكَانِ المُنَاسِبِ لَهُ فِي العَلَمِ!</p>
+            </div>
+
+            <!-- Flag Target Board -->
+            <div class="relative w-full max-w-md h-56 bg-slate-100 border-4 border-slate-400 rounded-2xl overflow-hidden shadow-inner flex flex-col">
+                <!-- Top Stripe Zone (Black) -->
+                <div id="zone-black" onclick="placePiece('black')" class="drop-zone h-1/3 w-full border-b-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-200/50 cursor-pointer hover:bg-slate-200">
+                    <span class="text-slate-400 text-sm font-bold pointer-events-none">1. الشَّرِيطُ العُلْوِيُّ</span>
+                </div>
+                <!-- Middle Stripe Zone (White) -->
+                <div id="zone-white" onclick="placePiece('white')" class="drop-zone h-1/3 w-full border-b-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-200/50 cursor-pointer hover:bg-slate-200">
+                    <span class="text-slate-400 text-sm font-bold pointer-events-none">2. الشَّرِيطُ الأَوْسَطُ</span>
+                </div>
+                <!-- Bottom Stripe Zone (Green) -->
+                <div id="zone-green" onclick="placePiece('green')" class="drop-zone h-1/3 w-full flex items-center justify-center bg-slate-200/50 cursor-pointer hover:bg-slate-200">
+                    <span class="text-slate-400 text-sm font-bold pointer-events-none">3. الشَّرِيطُ السُّفْلِيُّ</span>
+                </div>
+
+                <!-- Red Triangle Overlay Zone -->
+                <div id="zone-triangle" onclick="placePiece('triangle')" class="absolute top-0 right-0 h-full w-1/2 flex items-center justify-end pr-2 cursor-pointer z-10">
+                    <div id="triangle-placeholder" class="w-full h-full flex items-center justify-center text-xs text-red-500 font-bold border-l-2 border-dashed border-red-300 bg-red-50/40" style="clip-path: polygon(100% 0, 0 50%, 100% 100%);">
+                        المُثَلَّثُ
+                    </div>
+                </div>
+
+                <!-- Seven-pointed Star Zone (Inside Triangle) -->
+                <div id="zone-star" onclick="placePiece('star')" class="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-2 border-dashed border-amber-400 bg-amber-50/60 flex items-center justify-center cursor-pointer z-20 hidden">
+                    <span class="text-[10px] text-amber-600 font-bold pointer-events-none">النَّجْمَةُ</span>
+                </div>
+            </div>
+
+            <!-- Puzzle Pieces Available to Pick -->
+            <div class="w-full max-w-md bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 flex flex-wrap justify-center gap-3">
+                <button id="piece-black" onclick="selectPiece('black')" class="px-4 py-2 bg-black text-white rounded-xl font-bold shadow active:scale-95 border-2 border-black">الشَّرِيطُ الأَسْوَدُ</button>
+                <button id="piece-green" onclick="selectPiece('green')" class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold shadow active:scale-95 border-2 border-emerald-700">الشَّرِيطُ الأَخْضَرُ</button>
+                <button id="piece-white" onclick="selectPiece('white')" class="px-4 py-2 bg-white text-slate-800 rounded-xl font-bold shadow active:scale-95 border-2 border-slate-300">الشَّرِيطُ الأَبْيَضُ</button>
+                <button id="piece-triangle" onclick="selectPiece('triangle')" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold shadow active:scale-95 border-2 border-red-700">المُثَلَّثُ الأَحْمَرُ</button>
+                <button id="piece-star" onclick="selectPiece('star')" class="px-4 py-2 bg-amber-400 text-slate-900 rounded-xl font-bold shadow active:scale-95 border-2 border-amber-500">النَّجْمَةُ السُّبَاعِيَّةُ ⭐</button>
+            </div>
+
+            <button id="finish-btn" onclick="finishGame()" disabled class="w-full max-w-md py-4 bg-gray-300 text-gray-500 text-xl font-bold rounded-2xl shadow transition-all cursor-not-allowed">
+                إِكْمَالُ العَلَمِ <i class="fa-solid fa-check mr-2"></i>
+            </button>
+        </section>
+
+        <!-- WINNING MODAL -->
+        <section id="win-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 border-4 border-amber-400 shadow-2xl animate-bounce-in">
+                <div class="text-6xl text-amber-400 animate-bounce">🏆</div>
+                <h2 class="text-3xl font-black text-slate-800">أَحْسَنْتَ يَا بَطَلُ! 🎉</h2>
+                <p class="text-lg text-slate-600 font-bold">لَقَدْ تَعَرَّفْتَ عَلَى أَلْوَانِ عَلَمِ وَطَنِنَا الغَالِي الأُرْدُنِّ وَقُمْتَ بِبِنَائِهِ بِنَجَاحٍ!</p>
+                
+                <!-- Completed Flag Display -->
+                <div class="w-48 h-28 mx-auto border-2 border-slate-400 rounded-lg overflow-hidden shadow-md relative">
+                    <div class="h-1/3 bg-black w-full"></div>
+                    <div class="h-1/3 bg-white w-full"></div>
+                    <div class="h-1/3 bg-emerald-600 w-full"></div>
+                    <div class="absolute top-0 right-0 h-full w-1/2 bg-red-600" style="clip-path: polygon(100% 0, 0 50%, 100% 100%);"></div>
+                    <div class="absolute top-1/2 right-[18%] transform -translate-y-1/2 text-white text-xs">★</div>
+                </div>
+
+                <button onclick="resetGame()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xl rounded-2xl shadow-lg transition-all active:scale-95">
+                    إِعَادَةُ اللَّعِبِ <i class="fa-solid fa-rotate-right mr-2"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 p-4 text-center text-slate-500 text-sm font-medium">
+        لُعْبَةٌ تَعْلِيمِيَّةٌ تَفَاعُلِيَّةٌ لِلصَّفِّ الأَوَّلِ - عَلَمُ الأُرْدُنِّ 🇯🇴
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // Game State Variables
+        let selectedColors = new Set();
+        const correctColors = ['أسود', 'أبيض', 'أخضر', 'أحمر'];
+        let activePiece = null;
+        let placedPieces = {
+            black: false,
+            white: false,
+            green: false,
+            triangle: false,
+            star: false
+        };
+
+        // Sound Effects Helper via Tone.js
+        function playSound(type) {
+            try {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                const synth = new Tone.Synth().toDestination();
+                
+                if (type === 'correct') {
+                    synth.triggerAttackRelease("C5", "8n");
+                } else if (type === 'win') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("C5", "8n", now);
+                    synth.triggerAttackRelease("E5", "8n", now + 0.15);
+                    synth.triggerAttackRelease("G5", "8n", now + 0.3);
+                    synth.triggerAttackRelease("C6", "4n", now + 0.45);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease("G3", "8n");
+                }
+            } catch(e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        // Show Temporary Message Banner
+        function showFeedback(text, isSuccess) {
+            const msg = document.getElementById('feedback-msg');
+            msg.textContent = text;
+            msg.className = `fixed top-20 z-50 px-6 py-3 rounded-2xl shadow-xl text-lg font-bold text-white transition-all transform duration-300 ${isSuccess ? 'bg-emerald-500' : 'bg-red-500'}`;
+            msg.classList.remove('hidden', '-translate-y-full');
+            
+            setTimeout(() => {
+                msg.classList.add('-translate-y-full');
+                setTimeout(() => msg.classList.add('hidden'), 300);
+            }, 1800);
+        }
+
+        // STAGE 1 LOGIC
+        function selectColor(button, colorName, isCorrect) {
+            if (selectedColors.has(colorName)) return;
+
+            if (isCorrect) {
+                playSound('correct');
+                selectedColors.add(colorName);
+                button.classList.add('opacity-40', 'pointer-events-none');
+                
+                // Add to basket
+                const basket = document.getElementById('basket');
+                if (selectedColors.size === 1) basket.innerHTML = '';
+                
+                const tag = document.createElement('span');
+                tag.className = 'px-3 py-1 bg-amber-200 text-amber-900 rounded-full font-bold text-sm shadow flex items-center gap-1 animate-bounce';
+                tag.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> ${colorName}`;
+                basket.appendChild(tag);
+
+                document.getElementById('collected-count').textContent = selectedColors.size;
+                showFeedback(`رَائِعٌ! لَوْنُ ${colorName} مِنْ أَلْوَانِ العَلَمِ 👏`, true);
+
+                if (selectedColors.size === 4) {
+                    const nextBtn = document.getElementById('next-1-btn');
+                    nextBtn.disabled = false;
+                    nextBtn.className = "w-full max-w-md py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-extrabold rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer pulse-slow";
+                    playSound('win');
+                }
+            } else {
+                playSound('wrong');
+                button.classList.add('animate-shake');
+                showFeedback(`حَاوِلْ مَرَّةً أُخْرَى! لَوْنُ ${colorName} لَيْسَ فِي العَلَمِ ❌`, false);
+                setTimeout(() => button.classList.remove('animate-shake'), 500);
+            }
+        }
+
+        function goToStage2() {
+            playSound('correct');
+            document.getElementById('stage-1').classList.add('hidden');
+            document.getElementById('stage-2').classList.remove('hidden');
+            
+            // Update step indicators
+            document.getElementById('step-dot-1').className = "w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shadow";
+            document.getElementById('step-dot-2').className = "w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow";
+        }
+
+        // STAGE 2 LOGIC
+        function checkCount(number, btn) {
+            if (number === 4) {
+                playSound('win');
+                btn.className = "w-20 h-20 bg-emerald-500 text-white border-4 border-emerald-600 text-3xl font-black rounded-3xl shadow-lg scale-110 transition-all";
+                showFeedback('إِجَابَةٌ صَحِيحَةٌ! عَدَدُ أَلْوَانِ العَلَمِ 4 👍', true);
+
+                const nextBtn = document.getElementById('next-2-btn');
+                nextBtn.disabled = false;
+                nextBtn.className = "w-full max-w-md py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-extrabold rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer pulse-slow";
+            } else {
+                playSound('wrong');
+                btn.className = "w-20 h-20 bg-red-100 border-4 border-red-400 text-red-600 text-3xl font-black rounded-3xl shadow-lg transition-all";
+                showFeedback('حَاوِلْ مَرَّةً أُخْرَى! عُدَّ الأَلْوَانَ جَيِّدًا 🧐', false);
+            }
+        }
+
+        function goToStage3() {
+            playSound('correct');
+            document.getElementById('stage-2').classList.add('hidden');
+            document.getElementById('stage-3').classList.remove('hidden');
+
+            // Update step indicators
+            document.getElementById('step-dot-2').className = "w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shadow";
+            document.getElementById('step-dot-3').className = "w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shadow";
+        }
+
+        // STAGE 3 LOGIC (PUZZLE)
+        function selectPiece(type) {
+            if (placedPieces[type]) return;
+            
+            playSound('correct');
+            activePiece = type;
+
+            // Highlight buttons
+            ['black', 'green', 'white', 'triangle', 'star'].forEach(p => {
+                const el = document.getElementById(`piece-${p}`);
+                if (el) {
+                    if (p === type) {
+                        el.classList.add('ring-4', 'ring-amber-400', 'scale-105');
+                    } else {
+                        el.classList.remove('ring-4', 'ring-amber-400', 'scale-105');
+                    }
+                }
+            });
+        }
+
+        function placePiece(targetZone) {
+            if (!activePiece) {
+                showFeedback('اخْتَر جُزْءًا مِنَ الأَسْفَلِ أَوَّلًا! 👇', false);
+                return;
+            }
+
+            if (activePiece === targetZone) {
+                playSound('correct');
+                placedPieces[targetZone] = true;
+                
+                // Hide piece button
+                const pieceBtn = document.getElementById(`piece-${activePiece}`);
+                pieceBtn.classList.add('opacity-20', 'pointer-events-none');
+                pieceBtn.classList.remove('ring-4', 'ring-amber-400', 'scale-105');
+
+                // Render in flag area
+                if (targetZone === 'black') {
+                    const z = document.getElementById('zone-black');
+                    z.className = "h-1/3 w-full bg-black flex items-center justify-center text-white font-bold text-sm";
+                    z.textContent = "1. الشَّرِيطُ الأَسْوَدُ";
+                } else if (targetZone === 'white') {
+                    const z = document.getElementById('zone-white');
+                    z.className = "h-1/3 w-full bg-white flex items-center justify-center text-slate-800 font-bold text-sm";
+                    z.textContent = "2. الشَّرِيطُ الأَبْيَضُ";
+                } else if (targetZone === 'green') {
+                    const z = document.getElementById('zone-green');
+                    z.className = "h-1/3 w-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm";
+                    z.textContent = "3. الشَّرِيطُ الأَخْضَرُ";
+                } else if (targetZone === 'triangle') {
+                    const placeholder = document.getElementById('triangle-placeholder');
+                    placeholder.className = "w-full h-full bg-red-600 flex items-center justify-center text-white font-bold text-xs";
+                    placeholder.style.clipPath = "polygon(100% 0, 0 50%, 100% 100%)";
+                    placeholder.textContent = "";
+                    // Unlock star zone
+                    document.getElementById('zone-star').classList.remove('hidden');
+                } else if (targetZone === 'star') {
+                    const z = document.getElementById('zone-star');
+                    z.className = "absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 text-white font-bold text-2xl z-20";
+                    z.innerHTML = "★";
+                }
+
+                showFeedback('مَمْتَازٌ! مَكَانٌ صَحِيحٌ 👏', true);
+                activePiece = null;
+
+                // Check completion
+                if (Object.values(placedPieces).every(val => val === true)) {
+                    const finishBtn = document.getElementById('finish-btn');
+                    finishBtn.disabled = false;
+                    finishBtn.className = "w-full max-w-md py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-extrabold rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer pulse-slow";
+                }
+
+            } else {
+                playSound('wrong');
+                showFeedback('مَكَانٌ غَيْرُ صَحِيحٍ! حَاوِلْ مَرَّةً أُخْرَى ❌', false);
+            }
+        }
+
+        function finishGame() {
+            playSound('win');
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+            document.getElementById('win-modal').classList.remove('hidden');
+        }
+
+        function resetGame() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
