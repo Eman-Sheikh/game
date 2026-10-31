@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لُعْبَةُ أُحِبُّ مَلِكِي وَوَطَنِي - الصَّفُّ الأَوَّلُ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Tajawal', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bounce-hover:hover {
+            transform: scale(1.05);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .active-btn {
+            transform: scale(0.95);
+        }
+
+        /* Pulse Animation for interactive buttons */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(234, 179, 8, 0.9); }
+        }
+
+        .glow-effect {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 4px solid #fde047;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Star Bounce */
+        @keyframes star-jump {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(15deg); }
+        }
+        .star-anim {
+            display: inline-block;
+            animation: star-jump 1.5s infinite ease-in-out;
+        }
+
+        /* Responsive Canvas */
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-2 md:p-4 text-gray-800">
+
+    <!-- Top Header & Navigation Bar -->
+    <header class="w-full max-w-5xl bg-white/90 backdrop-blur-md rounded-3xl p-3 md:p-4 shadow-xl border-4 border-yellow-400 flex flex-wrap items-center justify-between gap-2 mb-4">
+        <!-- Logo / Title -->
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 md:w-14 md:h-14 bg-red-600 rounded-2xl flex items-center justify-center text-white text-2xl md:text-3xl shadow-md border-2 border-yellow-300">
+                👑
+            </div>
+            <div>
+                <h1 class="text-xl md:text-3xl font-black text-red-700 leading-tight">أُحِبُّ مَلِكِي وَوَطَنِي</h1>
+                <p class="text-xs md:text-sm font-bold text-emerald-700">لُعْبَةٌ تَفَاعُلِيَّةٌ لِأَبْطَالِ الصَّفِّ الأَوَّلِ</p>
+            </div>
+        </div>
+
+        <!-- Score & Fullscreen Buttons -->
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- Score Counter -->
+            <div class="bg-yellow-100 border-2 border-yellow-500 rounded-2xl px-3 py-1 md:px-4 md:py-2 flex items-center gap-2 shadow-inner">
+                <span class="text-2xl md:text-3xl star-anim">⭐</span>
+                <span id="score-counter" class="text-xl md:text-2xl font-black text-amber-700">0</span>
+                <span class="text-xs md:text-sm font-bold text-amber-800">نُقْطَة</span>
+            </div>
+
+            <!-- Sound Toggle Button -->
+            <button id="sound-btn" onclick="toggleAudio()" class="w-10 h-10 md:w-12 md:h-12 bg-sky-100 hover:bg-sky-200 border-2 border-sky-400 rounded-2xl flex items-center justify-center text-sky-700 text-lg md:text-xl transition-all shadow-sm">
+                <i class="fas fa-volume-up"></i>
+            </button>
+
+            <!-- Fullscreen Button -->
+            <button id="fullscreen-btn" onclick="toggleFullScreen()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-3 py-2 md:px-4 md:py-2 rounded-2xl border-b-4 border-emerald-700 transition-all flex items-center gap-2 text-sm md:text-base shadow-md">
+                <i class="fas font-black fa-expand"></i>
+                <span class="hidden sm:inline">شَاشَة كَامِلَة</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs / Activity Selectors -->
+    <nav class="w-full max-w-5xl flex justify-center gap-2 md:gap-4 mb-4">
+        <button onclick="switchTab('activity1')" id="tab-activity1" class="tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-amber-400 border-amber-600 text-white flex items-center justify-center gap-2">
+            <span>🧩</span>
+            <span>تَرْتِيبُ الْكَلِمَاتِ</span>
+        </button>
+        <button onclick="switchTab('activity2')" id="tab-activity2" class="tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-white border-gray-300 text-gray-700 hover:bg-emerald-100 flex items-center justify-center gap-2">
+            <span>❓</span>
+            <span>مَزْرَعَةُ الأَسْئِلَةِ</span>
+        </button>
+        <button onclick="switchTab('activity3')" id="tab-activity3" class="tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-white border-gray-300 text-gray-700 hover:bg-pink-100 flex items-center justify-center gap-2">
+            <span>🎨</span>
+            <span>لَوْحَةُ التَّلْوِينِ</span>
+        </button>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-5xl flex-1 flex flex-col items-center justify-center">
+
+        <!-- ACTIVITY 1: Sentence Builder / Order Words -->
+        <section id="activity1" class="activity-section w-full glass-card rounded-3xl p-4 md:p-6 text-center flex flex-col items-center justify-between min-h-[420px]">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-black text-indigo-800 mb-2">🧩 النَّشَاطُ الأَوَّلُ: رَتِّبِ الْكَلِمَاتِ لِتُكَوِّنَ جُمْلَةً مُفِيدَةً</h2>
+                <p class="text-base md:text-lg text-gray-600 font-bold mb-4">اِضْغَطْ عَلَى الكَلِمَاتِ بِالتَّرْتِيبِ الصَّحِيحِ لِبِنَاءِ الجُمْلَةِ!</p>
+            </div>
+
+            <!-- Sentence Target Box -->
+            <div id="sentence-target" class="w-full min-h-[80px] bg-slate-100 border-4 border-dashed border-indigo-300 rounded-2xl p-3 flex flex-wrap items-center justify-center gap-3 mb-6 transition-all shadow-inner">
+                <span class="text-gray-400 font-bold text-lg select-none">رَتِّبِ الكَلِمَاتِ هُنَا...</span>
+            </div>
+
+            <!-- Words Pool Box -->
+            <div id="words-pool" class="w-full flex flex-wrap items-center justify-center gap-3 md:gap-4 mb-6">
+                <!-- Word buttons generated by JS -->
+            </div>
+
+            <!-- Controls -->
+            <div class="flex gap-4">
+                <button onclick="checkSentence()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg md:text-xl px-6 py-3 rounded-2xl border-b-4 border-emerald-700 active:scale-95 transition-all shadow-lg flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>تَأَكَّدْ مِنَ الإِجَابَةِ</span>
+                </button>
+                <button onclick="resetSentenceActivity()" class="bg-rose-500 hover:bg-rose-600 text-white font-black text-lg md:text-xl px-5 py-3 rounded-2xl border-b-4 border-rose-700 active:scale-95 transition-all shadow-lg flex items-center gap-2">
+                    <i class="fas fa-redo"></i>
+                    <span>إِعَادَةُ التَّرْتِيبِ</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ACTIVITY 2: Quiz & Matching Game -->
+        <section id="activity2" class="activity-section hidden w-full glass-card rounded-3xl p-4 md:p-6 text-center flex flex-col items-center justify-between min-h-[420px]">
+            <div class="w-full">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="quiz-progress" class="bg-indigo-100 text-indigo-800 font-black px-4 py-1.5 rounded-full text-sm md:text-base border border-indigo-300">السُّؤَالُ 1 مِنْ 3</span>
+                    <span class="text-xl">🏆</span>
+                </div>
+                <h2 id="quiz-question" class="text-2xl md:text-3xl font-black text-indigo-900 mb-6 bg-amber-50 p-4 rounded-2xl border-2 border-amber-200">
+                    مَنْ هُوَ مَلِكُ المَمْلَكَةِ الأُرْدُنِيَّةِ الهَاشِمِيَّةِ؟
+                </h2>
+            </div>
+
+            <!-- Options Container -->
+            <div id="quiz-options" class="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Generated by JS -->
+            </div>
+
+            <!-- Next Button -->
+            <div id="quiz-next-container" class="hidden">
+                <button onclick="nextQuizQuestion()" class="bg-amber-500 hover:bg-amber-600 text-white font-black text-xl px-8 py-3 rounded-2xl border-b-4 border-amber-700 active:scale-95 transition-all shadow-lg flex items-center gap-2">
+                    <span>السُّؤَالُ التَّالِي</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ACTIVITY 3: Interactive Coloring & Decorating Board -->
+        <section id="activity3" class="activity-section hidden w-full glass-card rounded-3xl p-4 md:p-6 text-center flex flex-col items-center justify-between">
+            <h2 class="text-2xl md:text-3xl font-black text-pink-700 mb-1">🎨 النَّشَاطُ الثَّالِثُ: لَوْحَةُ التَّلْوِينِ وَالتَّزْيِينِ</h2>
+            <p class="text-sm md:text-base text-gray-600 font-bold mb-3">اخْتَرِ اللَّوْنَ أَوِ المَلْصَقَ ثُمَّ انْقُرْ عَلَى اللَّوْحَةِ لِتَزْيِينِهَا!</p>
+
+            <!-- Color Palette & Tools -->
+            <div class="w-full bg-slate-100 p-3 rounded-2xl border-2 border-slate-300 flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-4 shadow-inner">
+                <!-- Color Pickers -->
+                <div class="flex items-center gap-2">
+                    <button onclick="setColor('#ef4444')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500 border-2 border-white shadow-md ring-4 ring-transparent focus:ring-red-300"></button>
+                    <button onclick="setColor('#22c55e')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-500 border-2 border-white shadow-md ring-4 ring-transparent focus:ring-green-300"></button>
+                    <button onclick="setColor('#3b82f6')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500 border-2 border-white shadow-md ring-4 ring-transparent focus:ring-blue-300"></button>
+                    <button onclick="setColor('#eab308')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-yellow-500 border-2 border-white shadow-md ring-4 ring-transparent focus:ring-yellow-300"></button>
+                    <button onclick="setColor('#a855f7')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-500 border-2 border-white shadow-md ring-4 ring-transparent focus:ring-purple-300"></button>
+                    <button onclick="setColor('#000000')" class="color-btn w-8 h-8 md:w-10 md:h-10 rounded-full bg-black border-2 border-white shadow-md ring-4 ring-transparent focus:ring-gray-300"></button>
+                </div>
+
+                <div class="h-8 w-0.5 bg-gray-300 mx-1"></div>
+
+                <!-- Stamps & Brush Tools -->
+                <div class="flex items-center gap-2">
+                    <button onclick="setTool('brush')" id="tool-brush" class="tool-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow flex items-center gap-1">
+                        <i class="fas fa-paint-brush"></i> <span>فُرْشَاة</span>
+                    </button>
+                    <button onclick="setTool('stamp-star')" id="tool-star" class="tool-btn px-3 py-1.5 bg-white text-gray-700 rounded-xl font-bold text-sm shadow hover:bg-yellow-100 flex items-center gap-1">
+                        ⭐ <span>نَجْمَة</span>
+                    </button>
+                    <button onclick="setTool('stamp-crown')" id="tool-crown" class="tool-btn px-3 py-1.5 bg-white text-gray-700 rounded-xl font-bold text-sm shadow hover:bg-yellow-100 flex items-center gap-1">
+                        👑 <span>تَاج</span>
+                    </button>
+                    <button onclick="setTool('stamp-heart')" id="tool-heart" class="tool-btn px-3 py-1.5 bg-white text-gray-700 rounded-xl font-bold text-sm shadow hover:bg-red-100 flex items-center gap-1">
+                        ❤️ <span>قَلْب</span>
+                    </button>
+                </div>
+
+                <div class="h-8 w-0.5 bg-gray-300 mx-1"></div>
+
+                <!-- Eraser & Clear -->
+                <button onclick="clearCanvas()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 rounded-xl font-bold text-sm shadow transition-all flex items-center gap-1">
+                    <i class="fas fa-trash-alt"></i> <span>مَسْحُ اللَّوْحَةِ</span>
+                </button>
+            </div>
+
+            <!-- Drawing Canvas Wrapper -->
+            <div class="relative w-full bg-white border-4 border-pink-300 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center">
+                <canvas id="paintCanvas" class="w-full h-[280px] md:h-[320px] cursor-crosshair"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Dialog for Celebrations and Feedback -->
+    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl border-8 border-yellow-400 p-6 max-w-md w-full text-center shadow-2xl transform transition-all scale-95" id="modal-card">
+            <div id="modal-icon" class="text-6xl mb-3">🎉</div>
+            <h3 id="modal-title" class="text-3xl font-black text-indigo-900 mb-2">أَحْسَنْتَ يا بَطَلُ!</h3>
+            <p id="modal-msg" class="text-xl text-gray-700 font-bold mb-6">إِجَابَةٌ صَحِيحَةٌ وَرَائِعَةٌ!</p>
+            <button onclick="closeModal()" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-xl px-8 py-3 rounded-2xl border-b-4 border-green-800 active:scale-95 shadow-lg w-full">
+                مُتَابَعَة 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-4 text-center text-xs md:text-sm font-bold text-gray-600">
+        المَمْلَكَةُ الأُرْدُنِيَّةُ الهَاشِمِيَّةُ 🇯🇴 | مَادَّةُ التَّرْبِيَةِ الوَطَنِيَّةِ - الصَّفُّ الأَوَّلُ
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Game State Variables
+        let score = 0;
+        let audioEnabled = true;
+        let currentTab = 'activity1';
+
+        // Web Audio API Synthesizer for Fun Sound Effects
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        // Voice Feedback Speech Synthesis
+        function speakArabic(text) {
+            if (!audioEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ar-SA';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerHTML = audioEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            btn.classList.toggle('bg-rose-100', !audioEnabled);
+            btn.classList.toggle('text-rose-700', !audioEnabled);
+        }
+
+        function addScore(points) {
+            score += points;
+            document.getElementById('score-counter').innerText = score;
+        }
+
+        // Full Screen Toggle
+        function toggleFullScreen() {
+            playSound('click');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            playSound('click');
+            currentTab = tabId;
+            document.querySelectorAll('.activity-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-white border-gray-300 text-gray-700 hover:bg-indigo-50 flex items-center justify-center gap-2';
+            });
+
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (tabId === 'activity1') {
+                activeBtn.className = 'tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-amber-400 border-amber-600 text-white flex items-center justify-center gap-2';
+            } else if (tabId === 'activity2') {
+                activeBtn.className = 'tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-emerald-500 border-emerald-700 text-white flex items-center justify-center gap-2';
+            } else if (tabId === 'activity3') {
+                activeBtn.className = 'tab-btn flex-1 max-w-[200px] py-2 md:py-3 px-2 rounded-2xl font-black text-sm md:text-lg border-b-4 transition-all shadow-md bg-pink-500 border-pink-700 text-white flex items-center justify-center gap-2';
+                setTimeout(resizeCanvas, 50); // Ensure canvas size is accurate when shown
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ACTIVITY 1: Sentence Builder / Words Ordering Logic
+        // -------------------------------------------------------------
+        const sentenceLevels = [
+            { words: ["أُحِبُّ", "مَلِكِي", "وَوَطَنِي"], correct: ["أُحِبُّ", "مَلِكِي", "وَوَطَنِي"] },
+            { words: ["جَلَالَةُ", "المَلِكِ", "عَبْدُ اللَّهِ", "الثَّانِي"], correct: ["جَلَالَةُ", "المَلِكِ", "عَبْدُ اللَّهِ", "الثَّانِي"] }
+        ];
+
+        let currentSentenceIdx = 0;
+        let selectedWords = [];
+
+        function initSentenceActivity() {
+            const level = sentenceLevels[currentSentenceIdx];
+            // Shuffle words for initial display
+            const shuffled = [...level.words].sort(() => Math.random() - 0.5);
+            selectedWords = [];
+
+            renderSentenceTarget();
+
+            const pool = document.getElementById('words-pool');
+            pool.innerHTML = '';
+            shuffled.forEach((word) => {
+                const btn = document.createElement('button');
+                btn.className = 'word-card bg-amber-100 hover:bg-amber-200 border-b-4 border-amber-400 text-amber-900 font-black text-xl md:text-2xl px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 bounce-hover';
+                btn.innerText = word;
+                btn.onclick = () => selectWord(word, btn);
+                pool.appendChild(btn);
+            });
+        }
+
+        function selectWord(word, btnElement) {
+            playSound('click');
+            speakArabic(word);
+            selectedWords.push(word);
+            btnElement.disabled = true;
+            btnElement.classList.add('opacity-30', 'pointer-events-none');
+            renderSentenceTarget();
+        }
+
+        function renderSentenceTarget() {
+            const target = document.getElementById('sentence-target');
+            target.innerHTML = '';
+            if (selectedWords.length === 0) {
+                target.innerHTML = `<span class="text-gray-400 font-bold text-lg select-none">اِضْغَطْ عَلَى الكَلِمَاتِ لِتَبْنِيَ الجُمْلَةَ هُنَا...</span>`;
+                return;
+            }
+
+            selectedWords.forEach((word, idx) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white border-2 border-indigo-400 text-indigo-900 font-black text-xl md:text-2xl px-4 py-2 rounded-xl shadow flex items-center gap-2 animate-bounce-once';
+                card.innerText = word;
+                card.onclick = () => removeWordAt(idx);
+                target.appendChild(card);
+            });
+        }
+
+        function removeWordAt(index) {
+            playSound('click');
+            const removedWord = selectedWords.splice(index, 1)[0];
+
+            // Re-enable in pool
+            const poolButtons = document.getElementById('words-pool').children;
+            for (let btn of poolButtons) {
+                if (btn.innerText === removedWord && btn.disabled) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-30', 'pointer-events-none');
+                    break;
+                }
+            }
+            renderSentenceTarget();
+        }
+
+        function resetSentenceActivity() {
+            playSound('click');
+            initSentenceActivity();
+        }
+
+        function checkSentence() {
+            const level = sentenceLevels[currentSentenceIdx];
+            const isCorrect = JSON.stringify(selectedWords) === JSON.stringify(level.correct);
+
+            if (isCorrect) {
+                playSound('success');
+                addScore(10);
+                triggerConfetti();
+                speakArabic("ممتاز! إجابة صحيحة");
+
+                showModal("🎉 رَائِعٌ جِدّاً!", "لَقَدْ قُمْتَ بِتَرْتِيبِ الجُمْلَةِ بِشَكْلٍ صَحِيحٍ!", () => {
+                    currentSentenceIdx = (currentSentenceIdx + 1) % sentenceLevels.length;
+                    initSentenceActivity();
+                });
+            } else {
+                playSound('error');
+                speakArabic("حاول مرة أخرى");
+                showModal("⚠️ حَاوِلْ مَرَّةً أُخْرَى", "التَّرْتِيبُ غَيْرُ صَحِيحٍ، حَاوِلْ مَرَّةً ثَانِيَةً يا بَطَلُ!");
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ACTIVITY 2: Quiz & Questions Logic
+        // -------------------------------------------------------------
+        const quizData = [
+            {
+                question: "مَنْ هُوَ مَلِكُ المَمْلَكَةِ الأُرْدُنِيَّةِ الهَاشِمِيَّةِ؟",
+                options: [
+                    { text: "جَلَالَةُ المَلِكِ عَبْدُ اللَّهِ الثَّانِي", correct: true, icon: "👑" },
+                    { text: "الْمَلِكُ الشّاعِرُ", correct: false, icon: "👤" },
+                    { text: "الْمُدَرِّسُ", correct: false, icon: "👨‍🏫" }
+                ]
+            },
+            {
+                question: "مَاذَا نَقُولُ لِوَطَنِنَا الأُرْدُنِّ وَمَلِكِنَا؟",
+                options: [
+                    { text: "أُحِبُّ مَلِكِي وَوَطَنِي", correct: true, icon: "❤️" },
+                    { text: "لا أَعْرِفُ", correct: false, icon: "❓" }
+                ]
+            },
+            {
+                question: "مَا هُوَ لَوْنُ العَلَمِ الأُرْدُنِيِّ الَّذِي نَفْتَخِرُ بِهِ؟",
+                options: [
+                    { text: "الأَسْوَدُ وَالأَبْيَضُ وَالأَخْضَرُ وَالأَحْمَرُ", correct: true, icon: "🇯🇴" },
+                    { text: "الأَزْرَقُ وَالأَصْفَرُ فَقَطْ", correct: false, icon: "🎨" }
+                ]
+            }
+        ];
+
+        let currentQuizIdx = 0;
+
+        function renderQuiz() {
+            const q = quizData[currentQuizIdx];
+            document.getElementById('quiz-progress').innerText = `السُّؤَالُ ${currentQuizIdx + 1} مِنْ ${quizData.length}`;
+            document.getElementById('quiz-question').innerText = q.question;
+            speakArabic(q.question);
+
+            const container = document.getElementById('quiz-options');
+            container.innerHTML = '';
+
+            document.getElementById('quiz-next-container').classList.add('hidden');
+
+            q.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-opt-btn bg-white hover:bg-amber-100 border-4 border-indigo-200 text-indigo-950 font-black text-xl md:text-2xl p-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-3 active:scale-95 text-right';
+                btn.innerHTML = `<span class="text-3xl">${opt.icon}</span> <span>${opt.text}</span>`;
+                btn.onclick = () => handleQuizAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleQuizAnswer(option, btnElement) {
+            // Disable all option buttons
+            const allBtns = document.querySelectorAll('.quiz-opt-btn');
+            allBtns.forEach(b => b.classList.add('pointer-events-none'));
+
+            if (option.correct) {
+                playSound('success');
+                btnElement.classList.remove('bg-white', 'border-indigo-200');
+                btnElement.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                addScore(10);
+                triggerConfetti();
+                speakArabic("إجابة صحيحة ممتاز!");
+                document.getElementById('quiz-next-container').classList.remove('hidden');
+            } else {
+                playSound('error');
+                btnElement.classList.remove('bg-white', 'border-indigo-200');
+                btnElement.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-900');
+                speakArabic("حاول مرة أخرى");
+                setTimeout(() => {
+                    allBtns.forEach(b => b.classList.remove('pointer-events-none'));
+                }, 1000);
+            }
+        }
+
+        function nextQuizQuestion() {
+            playSound('click');
+            currentQuizIdx = (currentQuizIdx + 1) % quizData.length;
+            renderQuiz();
+        }
+
+        // -------------------------------------------------------------
+        // ACTIVITY 3: Interactive Digital Coloring Board
+        // -------------------------------------------------------------
+        let canvas, ctx;
+        let currentColor = '#ef4444';
+        let currentTool = 'brush'; // 'brush', 'stamp-star', 'stamp-crown', 'stamp-heart'
+        let isDrawing = false;
+
+        function initCanvas() {
+            canvas = document.getElementById('paintCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+
+            // Event Listeners for Drawing & Touch
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startDraw(e.touches[0]);
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                draw(e.touches[0]);
+            });
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            drawTemplateBackground();
+        }
+
+        function drawTemplateBackground() {
+            if (!ctx) return;
+            // Clear canvas background
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw decorative guide outline for students
+            ctx.fillStyle = "#1e293b";
+            ctx.font = `900 ${Math.min(canvas.width / 10, 48)}px 'Tajawal', sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("أُحِبُّ مَلِكِي وَوَطَنِي 🇯🇴", canvas.width / 2, canvas.height / 2);
+
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        }
+
+        function setColor(color) {
+            playSound('click');
+            currentColor = color;
+        }
+
+        function setTool(tool) {
+            playSound('click');
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+
+            if (tool === 'brush') document.getElementById('tool-brush').className = 'tool-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow flex items-center gap-1';
+            if (tool === 'stamp-star') document.getElementById('tool-star').className = 'tool-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow flex items-center gap-1';
+            if (tool === 'stamp-crown') document.getElementById('tool-crown').className = 'tool-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow flex items-center gap-1';
+            if (tool === 'stamp-heart') document.getElementById('tool-heart').className = 'tool-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow flex items-center gap-1';
+        }
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startDraw(e) {
+            isDrawing = true;
+            const { x, y } = getCanvasCoords(e);
+
+            if (currentTool.startsWith('stamp')) {
+                placeStamp(x, y);
+                isDrawing = false;
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+        }
+
+        function draw(e) {
+            if (!isDrawing || currentTool !== 'brush') return;
+            const { x, y } = getCanvasCoords(e);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function stopDraw() {
+            if (isDrawing) {
+                ctx.closePath();
+                isDrawing = false;
+            }
+        }
+
+        function placeStamp(x, y) {
+            playSound('click');
+            ctx.font = "36px serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            let stampEmoji = "⭐";
+            if (currentTool === 'stamp-crown') stampEmoji = "👑";
+            if (currentTool === 'stamp-heart') stampEmoji = "❤️";
+
+            ctx.fillText(stampEmoji, x, y);
+            addScore(2);
+        }
+
+        function clearCanvas() {
+            playSound('click');
+            drawTemplateBackground();
+        }
+
+        // -------------------------------------------------------------
+        // Modal & Confetti Helpers
+        // -------------------------------------------------------------
+        let modalCallback = null;
+
+        function showModal(title, msg, onConfirm = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = msg;
+            modalCallback = onConfirm;
+
+            const modal = document.getElementById('modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            playSound('click');
+            document.getElementById('modal').classList.add('hidden');
+            if (modalCallback) {
+                modalCallback();
+                modalCallback = null;
+            }
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Window Initialization
+        window.onload = function() {
+            initSentenceActivity();
+            renderQuiz();
+            initCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        };
+    </script>
+</body>
+</html>
