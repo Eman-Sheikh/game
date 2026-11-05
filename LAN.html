@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>خريطة شبكات الحاسوب التفاعلية - الصف التاسع</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+      direction: rtl;
+    }
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+      margin-bottom: 5px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 30px;
+    }
+    .mindmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 20px;
+      border: 2px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card.lan { border-color: #38bdf8; }
+    .card.man { border-color: #f43f5e; }
+    .card.wan { border-color: #a855f7; }
+    .card.comp { border-color: #10b981; }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-top: 0;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card.lan h2 { color: #38bdf8; }
+    .card.man h2 { color: #f43f5e; }
+    .card.wan h2 { color: #a855f7; }
+    .card.comp h2 { color: #10b981; }
+
+    .card p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .tag {
+      background: rgba(255,255,255,0.1);
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #fff;
+    }
+    .instruction {
+      text-align: center;
+      margin-top: 30px;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌐 الخريطة الذهنية: شبكات الحاسوب</h1>
+  <p class="subtitle">مادة التكنولوجيا والمهارات الرقمية - الصف التاسع الأساسي</p>
+
+  <div class="mindmap-grid">
+    
+    <!-- LAN Card -->
+    <div class="card lan" onclick="alert('الشبكة المحلية (LAN):\nتغطي مساحة جغرافية محدودة جداً مثل مختبرات المدارس والمنازل. تتميز بسرعة نقل بيانات عالية وتكلفة منخفضة.')">
+      <h2>الشبكة المحلية (LAN) <span class="tag">Local Area</span></h2>
+      <p><strong>المساحة:</strong> محدودة جداً (مبنى، غرف، مختبر مدرسة).</p>
+      <p><strong>السرعة والتكلفة:</strong> سرعة عالية جداً وتكلفة منخفضة.</p>
+      <p><strong>مثال:</strong> حواسيب مختبر أكاديمية الرواد الدولية.</p>
+    </div>
+
+    <!-- MAN Card -->
+    <div class="card man" onclick="alert('شبكة المدينة (MAN):\nتغطي مساحة جغرافية متوسطة الحجم لربط عدة فروع داخل نفس المدينة مثل البنوك أو المؤسسات.')">
+      <h2>شبكة المدينة (MAN) <span class="tag">Metropolitan</span></h2>
+      <p><strong>المساحة:</strong> متوسطة الحجم (مدينة أو بلدة كاملة).</p>
+      <p><strong>السرعة والتكلفة:</strong> سرعة متوسطة وتكلفة متوسطة.</p>
+      <p><strong>مثال:</strong> ربط فروع بنك أو مؤسسة داخل مدينة عمان.</p>
+    </div>
+
+    <!-- WAN Card -->
+    <div class="card wan" onclick="alert('الشبكة الموسعة (WAN):\nتغطي مساحات جغرافية شاسعة كالدول والقارات، وتعتمد على خطوط اتصال وأقمار صناعية معقدة.')">
+      <h2>الشبكة الموسعة (WAN) <span class="tag">Wide Area</span></h2>
+      <p><strong>المساحة:</strong> شاسعة جداً (دول، قارات، والعالم أجمع).</p>
+      <p><strong>السرعة والتكلفة:</strong> معقدة وعالية التكلفة جداً.</p>
+      <p><strong>مثال:</strong> شبكة الإنترنت العالمية (Internet).</p>
+    </div>
+
+    <!-- Hardware Components Card -->
+    <div class="card comp" onclick="alert('المكونات المادية للشبكة:\nالأجهزة الأساسية المستخدمة لربط الأجهزة ونقل البيانات وتوجيهها بالشبكة.')">
+      <h2>⚙️ المكونات المادية <span class="tag">Hardware</span></h2>
+      <p><strong>المبدل (Switch):</strong> جهاز لربط الأجهزة داخل الشبكة المحلية (LAN).</p>
+      <p><strong>الموجه (Router):</strong> جهاز يربط بين الشبكات المختلفة الممتدة ويوجه البيانات عبر الإنترنت.</p>
+    </div>
+
+  </div>
+
+  <p class="instruction">💡 اضغط على أي بطاقة لعرض الشرح المفصل والتعلم التفاعلي!</p>
+
+</body>
+</html>
