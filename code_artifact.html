@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> التواصل باستخدام الشبكات - المعلمة غدير عمر</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Cairo & Tajawal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        accent: {
+                            blue: '#2563eb',
+                            purple: '#7c3aed',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-glow {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        .drop-zone {
+            transition: all 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            transform: scale(1.02);
+        }
+
+        /* Certificate Print Styling */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #certificate-modal, #certificate-modal * {
+                visibility: visible;
+            }
+            #certificate-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Banner -->
+    <header class="glass-card sticky top-0 z-40 border-b border-slate-700/50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            
+            <!-- School & Teacher Info -->
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white text-2xl shadow-lg">
+                    <i class="fa-solid fa-network-wired"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
+                         التواصل باستخدام الشبكات 🌐
+                    </h1>
+                    <p class="text-xs text-slate-300 font-tajawal">
+                        الصف السابع | إعداد المعلمة: <span class="text-emerald-400 font-bold">غدير عمر</span> - مدارس أكاديمية الرواد الدولية
+                    </p>
+                </div>
+            </div>
+
+            <!-- Score & Controls -->
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <!-- Score Counter -->
+                <div class="bg-slate-800/90 border border-slate-700 rounded-xl px-4 py-1.5 flex items-center gap-3">
+                    <div class="flex items-center text-amber-400">
+                        <i class="fa-solid fa-star text-lg ml-1.5 animate-pulse"></i>
+                        <span id="score-display" class="font-bold text-lg">0</span>
+                        <span class="text-xs text-slate-400 mr-1">نقطة</span>
+                    </div>
+                </div>
+
+                <!-- Fullscreen Toggle Button -->
+                <button id="fullscreen-btn" onclick="toggleFullScreen()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 p-2.5 rounded-xl transition flex items-center justify-center text-sm font-semibold" title="ملء الشاشة">
+                    <i class="fa-solid fa-expand ml-1.5"></i>
+                    <span class="hidden sm:inline">ملء الشاشة</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-grow flex flex-col">
+
+        <!-- Progress Stepper / Level Selector -->
+        <div class="glass-card rounded-2xl p-4 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-sm font-bold text-slate-300">
+                    <i class="fa-solid fa-layer-group text-emerald-400 ml-2"></i>اختر مستوى التحدي:
+                </div>
+                <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
+                    <button onclick="switchLevel(1)" id="lvl-btn-1" class="lvl-btn bg-brand-600 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center transition shadow-lg">
+                        <i class="fa-solid fa-seedling ml-2"></i> التحدي الأول
+                    </button>
+                    <button onclick="switchLevel(2)" id="lvl-btn-2" class="lvl-btn bg-slate-800 text-slate-400 hover:text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center transition">
+                        <i class="fa-solid fa-gears ml-2"></i>التحدي الثاني 
+                    </button>
+                    <button onclick="switchLevel(3)" id="lvl-btn-3" class="lvl-btn bg-slate-800 text-slate-400 hover:text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center transition">
+                        <i class="fa-solid fa-shield-halved ml-2"></i> التحدي الثالث 
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 1 CONTAINER -->
+        <div id="level-1" class="level-content space-y-6">
+            
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-emerald-500">
+                <h2 class="text-xl font-bold text-emerald-400 mb-2 flex items-center">
+                    <i class="fa-solid fa-seedling ml-2"></i> المستوى الأول : تفكيك ومطابقة المفاهيم الرئيسية
+                </h2>
+                <p class="text-sm text-slate-300 font-tajawal">
+                    قم بسحب كل مفهوم أو جزء من العنوان وإسقاطه في مكانه الصحيح بالاعتماد على دراستك لعنوان البريد ومصطلحات الشبكات.
+                </p>
+            </div>
+
+            <!-- Challenge A: Email Address Components Parsing -->
+            <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-teal-300 mb-4 flex items-center">
+                    <i class="fa-solid fa-at ml-2"></i> التحدي الأول: أجزاء عنوان البريد الإلكتروني <span class="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-md mr-2">Ahmad_Ali@gmail.com</span>
+                </h3>
+
+                <!-- Source Draggables -->
+                <div class="mb-6">
+                    <p class="text-xs text-slate-400 mb-2">اسحب الأجزاء الآتية إلى مكانها المناسب في الجدول:</p>
+                    <div class="flex flex-wrap gap-3" id="email-parts-source">
+                        <div draggable="true" ondragstart="drag(event)" id="part-email" data-target="user-name" class="draggable-item bg-teal-600/40 hover:bg-teal-600 border border-teal-400/50 text-teal-100 font-bold px-4 py-2 rounded-xl text-sm">
+                            Ahmad_Ali
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="part-at" data-target="symbol" class="draggable-item bg-teal-600/40 hover:bg-teal-600 border border-teal-400/50 text-teal-100 font-bold px-4 py-2 rounded-xl text-sm">
+                            @
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="part-provider" data-target="provider" class="draggable-item bg-teal-600/40 hover:bg-teal-600 border border-teal-400/50 text-teal-100 font-bold px-4 py-2 rounded-xl text-sm">
+                            gmail
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="part-domain" data-target="domain" class="draggable-item bg-teal-600/40 hover:bg-teal-600 border border-teal-400/50 text-teal-100 font-bold px-4 py-2 rounded-xl text-sm">
+                            .com
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drop Targets -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-emerald-400 font-bold block mb-1">1. اسم المستخدم (User name)</span>
+                        <div ondrop="drop(event, 'user-name')" ondragover="allowDrop(event)" id="zone-user-name" class="drop-zone border-2 border-dashed border-slate-600 rounded-lg h-16 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                            ضع الجزء هنا
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-emerald-400 font-bold block mb-1">2. الرمز الخاص</span>
+                        <div ondrop="drop(event, 'symbol')" ondragover="allowDrop(event)" id="zone-symbol" class="drop-zone border-2 border-dashed border-slate-600 rounded-lg h-16 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                            ضع الجزء هنا
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-emerald-400 font-bold block mb-1">3. الشركة المزودة للخدمة</span>
+                        <div ondrop="drop(event, 'provider')" ondragover="allowDrop(event)" id="zone-provider" class="drop-zone border-2 border-dashed border-slate-600 rounded-lg h-16 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                            ضع الجزء هنا
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-emerald-400 font-bold block mb-1">4. النطاق</span>
+                        <div ondrop="drop(event, 'domain')" ondragover="allowDrop(event)" id="zone-domain" class="drop-zone border-2 border-dashed border-slate-600 rounded-lg h-16 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                            ضع الجزء هنا
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenge B: Core Terms Definition Matching -->
+            <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-teal-300 mb-4 flex items-center">
+                    <i class="fa-solid fa-book-bookmark ml-2"></i> التحدي الثاني: ربط المفاهيم الكبرى بمدلولها
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Card 1 -->
+                    <div class="bg-slate-800/90 p-4 rounded-xl border border-slate-700 space-y-3 flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold mb-2">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <h4 class="font-bold text-base text-slate-100">البريد الإلكتروني (e-mail)</h4>
+                        </div>
+                        <select id="match-term-1" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:outline-none">
+                            <option value="">اختر التعريف المناسب...</option>
+                            <option value="correct">وسيلة رقمية للتواصل تتيح إرسال واستقبال الرسائل والنصوص والملفات والمرفقات بأمان وفاعلية.</option>
+                            <option value="wrong1">شبكة تربط الأجهزة الذكية والأشياء بالإنترنت دون تدخل بشري مباشر.</option>
+                            <option value="wrong2">مجموعة برامج ترفيهية وألعاب فقط على شبكة الإنترنت.</option>
+                        </select>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-slate-800/90 p-4 rounded-xl border border-slate-700 space-y-3 flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold mb-2">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <h4 class="font-bold text-base text-slate-100">وسائل التواصل الاجتماعي (Social Media)</h4>
+                        </div>
+                        <select id="match-term-2" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:outline-none">
+                            <option value="">اختر التعريف المناسب...</option>
+                            <option value="wrong1">أنظمة بروتوكولات مخصصة لنقل الملفات بين الخوادم.</option>
+                            <option value="correct">تطبيقات ومواقع رقمية تتيح للأفراد تفاعل وتشارك المحتوى والآراء بصورة مكتوبة أو مسموعة أو مرئية.</option>
+                            <option value="wrong2">طابعة مركزية متصلة بالشبكة المحلية.</option>
+                        </select>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="bg-slate-800/90 p-4 rounded-xl border border-slate-700 space-y-3 flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold mb-2">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <h4 class="font-bold text-base text-slate-100">إنترنت الأشياء (IoT)</h4>
+                        </div>
+                        <select id="match-term-3" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:outline-none">
+                            <option value="">اختر التعريف المناسب...</option>
+                            <option value="wrong1">طريقة لإرسال رسائل وظيفية عبر بروتوكول SMTP.</option>
+                            <option value="wrong2">تطبيق خاص بحفظ الدروس المصورة مثل منصة درسك.</option>
+                            <option value="correct">منظومة ترتبط فيها أدوات وأجهزة متعددة بشبكة الإنترنت لتبادل البيانات وتحسين الأداء الذاتي.</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="checkLevel1Terms()" class="btn-glow bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl text-sm flex items-center">
+                        <i class="fa-solid fa-check-circle ml-2"></i> التحقق من إجابات المستوى الأول
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 2 CONTAINER -->
+        <div id="level-2" class="level-content hidden space-y-6">
+            
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-blue-500">
+                <h2 class="text-xl font-bold text-blue-400 mb-2 flex items-center">
+                    <i class="fa-solid fa-gears ml-2"></i> المستوى الثاني : تصنيف المزايا، البروتوكولات والخدمات
+                </h2>
+                <p class="text-sm text-slate-300 font-tajawal">
+                    قم بتصنيف البطاقات المختلفة إلى فئاتها الصحيحة كما جاءت في الكتاب المدرسي للصف السابع.
+                </p>
+            </div>
+
+            <!-- Sorting Challenge -->
+            <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-teal-300 mb-4 flex items-center">
+                    <i class="fa-solid fa-box-archive ml-2"></i> فرز عناصر التواصل عبر الشبكات
+                </h3>
+
+                <!-- Unsorted Items Pool -->
+                <div class="mb-6">
+                    <p class="text-xs text-slate-400 mb-2">انقر أو اسحب العناصر إلى الحاوية المناسبة لها:</p>
+                    <div id="sort-items-pool" class="flex flex-wrap gap-2.5 min-h-[60px] p-3 bg-slate-900/60 rounded-xl border border-slate-700">
+                        <!-- Sorting Items -->
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-ftp" data-cat="protocols" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-code ml-1.5 text-blue-400"></i> FTP (بروتوكول نقل الملفات)
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-ip" data-cat="protocols" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-network-wired ml-1.5 text-blue-400"></i> IP (بروتوكول الإنترنت)
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-smtp" data-cat="protocols" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-paper-plane ml-1.5 text-blue-400"></i> SMTP / IMAP
+                        </div>
+
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-teams" data-cat="elearning" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-graduation-cap ml-1.5 text-purple-400"></i> Microsoft Teams / Moodle
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-darsak" data-cat="elearning" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-chalkboard-user ml-1.5 text-purple-400"></i> منصة درسك / إدراك IDRAK
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-classroom" data-cat="elearning" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-school ml-1.5 text-purple-400"></i> Google Classroom / Khan Academy
+                        </div>
+
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-printer" data-cat="advantages" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-print ml-1.5 text-emerald-400"></i> مشاركة الأجهزة (الطابعة والماسح الضوئي)
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-software" data-cat="advantages" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-compact-disc ml-1.5 text-emerald-400"></i> مشاركة البرامج وتقليل التكلفة
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-interactive" data-cat="advantages" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-users-gear ml-1.5 text-emerald-400"></i> بيئة تفاعلية وتيسير العمل الجماعي
+                        </div>
+
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-gcloud" data-cat="cloud" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-cloud ml-1.5 text-amber-400"></i> Google Cloud
+                        </div>
+                        <div draggable="true" ondragstart="dragCategory(event)" id="card-onedrive" data-cat="cloud" class="draggable-item bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up ml-1.5 text-amber-400"></i> OneDrive Cloud
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Category Drop Zones -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Zone 1: Advantages -->
+                    <div class="bg-slate-800/80 rounded-xl p-4 border border-emerald-500/30 flex flex-col justify-between">
+                        <h4 class="font-bold text-sm text-emerald-400 mb-2 flex items-center">
+                            <i class="fa-solid fa-thumbs-up ml-1.5"></i> مزايا التواصل بالشبكات
+                        </h4>
+                        <div ondrop="dropCategory(event, 'advantages')" ondragover="allowDrop(event)" id="cat-zone-advantages" class="drop-zone border-2 border-dashed border-emerald-500/40 rounded-lg min-h-[120px] p-2 space-y-2">
+                        </div>
+                    </div>
+
+                    <!-- Zone 2: Protocols -->
+                    <div class="bg-slate-800/80 rounded-xl p-4 border border-blue-500/30 flex flex-col justify-between">
+                        <h4 class="font-bold text-sm text-blue-400 mb-2 flex items-center">
+                            <i class="fa-solid fa-network-wired ml-1.5"></i> بروتوكولات الشبكة والبريد
+                        </h4>
+                        <div ondrop="dropCategory(event, 'protocols')" ondragover="allowDrop(event)" id="cat-zone-protocols" class="drop-zone border-2 border-dashed border-blue-500/40 rounded-lg min-h-[120px] p-2 space-y-2">
+                        </div>
+                    </div>
+
+                    <!-- Zone 3: E-Learning Platforms -->
+                    <div class="bg-slate-800/80 rounded-xl p-4 border border-purple-500/30 flex flex-col justify-between">
+                        <h4 class="font-bold text-sm text-purple-400 mb-2 flex items-center">
+                            <i class="fa-solid fa-laptop-code ml-1.5"></i> منصات التعلم عن بعد
+                        </h4>
+                        <div ondrop="dropCategory(event, 'elearning')" ondragover="allowDrop(event)" id="cat-zone-elearning" class="drop-zone border-2 border-dashed border-purple-500/40 rounded-lg min-h-[120px] p-2 space-y-2">
+                        </div>
+                    </div>
+
+                    <!-- Zone 4: Cloud Computing -->
+                    <div class="bg-slate-800/80 rounded-xl p-4 border border-amber-500/30 flex flex-col justify-between">
+                        <h4 class="font-bold text-sm text-amber-400 mb-2 flex items-center">
+                            <i class="fa-solid fa-cloud-sun ml-1.5"></i> الحوسبة السحابية
+                        </h4>
+                        <div ondrop="dropCategory(event, 'cloud')" ondragover="allowDrop(event)" id="cat-zone-cloud" class="drop-zone border-2 border-dashed border-amber-500/40 rounded-lg min-h-[120px] p-2 space-y-2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="checkLevel2Sorting()" class="btn-glow bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-xl text-sm flex items-center">
+                        <i class="fa-solid fa-check-double ml-2"></i> التحقق من التصنيف
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 3 CONTAINER -->
+        <div id="level-3" class="level-content hidden space-y-6">
+            
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-amber-500">
+                <h2 class="text-xl font-bold text-amber-400 mb-2 flex items-center">
+                    <i class="fa-solid fa-shield-halved ml-2"></i> المستوى الثالث : الأمان الرقمي وسيناريوهات الشبكة
+                </h2>
+                <p class="text-sm text-slate-300 font-tajawal">
+                    حلّ المسائل السلوكية والأمنية في إنشاء الحسابات واختيار الشبكات وقواعد التواصل الآمن.
+                </p>
+            </div>
+
+            <!-- Quiz Scenarios Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Q1: Strong Password Evaluation -->
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center text-amber-400 font-bold text-base">
+                        <span class="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-xs ml-2">1</span>
+                        قواعد إنشاء كلمة المرور المحكمة (القوية)
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed font-tajawal">
+                        تريد طالبة إنشاء بريد إلكتروني آمن للتواصل مع معلمتها غدير. أي كلمات المرور التالية تعتبر **أقوى كلمة مرور مُحكمة** وفقاً لإرشادات الأمان بالدرس؟
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="pass-choice" value="wrong1" class="ml-2 accent-amber-500">
+                            <span>123456789 (أرقام متسلسلة سهلة الحفظ)</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="pass-choice" value="wrong2" class="ml-2 accent-amber-500">
+                            <span>ahmad2024 (اسم فقط مع تاريخ الميلاد)</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="pass-choice" value="correct" class="ml-2 accent-amber-500">
+                            <span>Gh@deer#2026! (تضمين أحرف كبيرة وصغيرة وأرقام ورموز)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q2: LAN vs WAN Scenario -->
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center text-amber-400 font-bold text-base">
+                        <span class="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-xs ml-2">2</span>
+                        نوع الشبكة المناسبة لنقل البيانات
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed font-tajawal">
+                        ترغب "أكاديمية الرواد الدولية" في ربط جميع أجهزة حاسوب مختبر المدرسة بطابعة واحدة مركزية داخل نفس المبنى. ما نوع هذه الشبكة؟
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="net-choice" value="correct" class="ml-2 accent-amber-500">
+                            <span>شبكة محليّة (LAN) - لأنها في منطقة جغرافية محدودة (مبنى واحد).</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="net-choice" value="wrong1" class="ml-2 accent-amber-500">
+                            <span>شبكة واسعة (WAN) - لأنها ترتبط عبر قارات العالم.</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl bg-slate-800/70 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-sm">
+                            <input type="radio" name="net-choice" value="wrong2" class="ml-2 accent-amber-500">
+                            <span>بروتوكول FTP فقط دون الحاجة لشبكة.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q3: Email Manners and Security -->
+                <div class="glass-card rounded-2xl p-6 space-y-4 md:col-span-2">
+                    <div class="flex items-center text-amber-400 font-bold text-base">
+                        <span class="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-xs ml-2">3</span>
+                        قواعد الأمان والآداب العامة عند التواصل عبر البريد الإلكتروني
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed font-tajawal">
+                        حدد السلوكيات الصحيحة السليمة من السلوكيات الخاطئة عند إرسال رسالة لمعلمتك أو زملائك:
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+                            <span>عدم مشاركة كلمة المرور الخاصة مطلقاً مع أحد وتجنب إطلاع الآخرين عليها</span>
+                            <select id="ethics-1" class="bg-slate-900 border border-slate-600 rounded p-1.5 text-xs text-emerald-400 font-bold">
+                                <option value="">اختر...</option>
+                                <option value="true">سلوك صحيح 🟢</option>
+                                <option value="false">سلوك خاطئ 🔴</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+                            <span>إرسال الرسالة بدون عنوان مناسب واستخدام أسماء مستعارة وهمية</span>
+                            <select id="ethics-2" class="bg-slate-900 border border-slate-600 rounded p-1.5 text-xs text-emerald-400 font-bold">
+                                <option value="">اختر...</option>
+                                <option value="false">سلوك صحيح 🟢</option>
+                                <option value="true">سلوك خاطئ 🔴</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+                            <span>كتابة عنوان واضح للرسالة وذكر اسمك الحقيقي دائماً عند إرسال واجب دراسي</span>
+                            <select id="ethics-3" class="bg-slate-900 border border-slate-600 rounded p-1.5 text-xs text-emerald-400 font-bold">
+                                <option value="">اختر...</option>
+                                <option value="true">سلوك صحيح 🟢</option>
+                                <option value="false">سلوك خاطئ 🔴</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+                            <span>مشاركة المحتوى والواجبات التعليمية عبر منصة بادلت (Edunation) الصفية</span>
+                            <select id="ethics-4" class="bg-slate-900 border border-slate-600 rounded p-1.5 text-xs text-emerald-400 font-bold">
+                                <option value="">اختر...</option>
+                                <option value="true">سلوك صحيح 🟢</option>
+                                <option value="false">سلوك خاطئ 🔴</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="checkLevel3Advanced()" class="btn-glow bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-8 rounded-xl text-base flex items-center">
+                    <i class="fa-solid fa-award ml-2 text-lg"></i> إنهاء التحدي وحساب النتيجة النهائية
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-card mt-auto border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+        <p>مادة الحاسوب والتكنولوجيا - الصف السابع | المعلمة: غدير عمر | مدارس أكاديمية الرواد الدولية © 2026</p>
+    </footer>
+
+    <!-- Result / Feedback Modal -->
+    <div id="feedback-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 text-center space-y-4 border border-slate-700 shadow-2xl">
+            <div id="modal-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl"></div>
+            <h3 id="modal-title" class="text-xl font-bold"></h3>
+            <p id="modal-body" class="text-sm text-slate-300 font-tajawal leading-relaxed"></p>
+            <button onclick="closeModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                متابعة
+            </button>
+        </div>
+    </div>
+
+    <!-- Final Certificate Modal -->
+    <div id="certificate-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-slate-900 text-slate-100 max-w-2xl w-full rounded-3xl p-8 border-4 border-amber-500/60 shadow-2xl space-y-6 relative text-center">
+            
+            <button onclick="closeCertificate()" class="no-print absolute top-4 left-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Certificate Header -->
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-black text-amber-400 tracking-wide mb-1">🏅 شهادة تميّز وإتقان رقمي 🏅</h2>
+                <p class="text-xs text-slate-400 font-tajawal">مدارس أكاديمية الرواد الدولية - قسم الحاسوب والتكنولوجيا</p>
+            </div>
+
+            <!-- Student Name Input / Display -->
+            <div class="no-print space-y-2">
+                <label class="block text-xs font-bold text-slate-300">أدخل اسم الطالب/الطالبة لإصدار الشهادة:</label>
+                <input type="text" id="student-name-input" oninput="updateCertName()" placeholder="اسم الطالب الثلاثي..." class="w-3/4 mx-auto block bg-slate-800 border border-slate-600 rounded-xl p-2.5 text-center text-sm font-bold text-emerald-400 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <!-- Certificate Body -->
+            <div class="space-y-4 py-2">
+                <p class="text-base text-slate-300 font-tajawal">
+                    تشهد المعلمة <span class="font-bold text-emerald-400 text-lg">غدير عمر</span> بأن الطالب/الطالبة:
+                </p>
+                <div id="cert-student-name" class="text-2xl font-extrabold text-teal-300 underline underline-offset-8">
+                    [ اسم الطالب/الطالبة ]
+                </div>
+                <p class="text-sm text-slate-300 font-tajawal leading-relaxed">
+                    قد أتم بنجاح وتفوق جميع مستويات  التفاعلية لدرس <br>
+                    <strong class="text-amber-400">"التواصل باستخدام الشبكات (Networks Communications)"</strong> <br>
+                    وحصل على مجموع نقاط: <span id="cert-final-score" class="font-bold text-emerald-400 text-lg">0</span> من 100
+                </p>
+            </div>
+
+            <!-- Certificate Footer Signature -->
+            <div class="pt-6 border-t border-slate-800 flex justify-between items-center text-xs font-tajawal">
+                <div class="text-right">
+                    <p class="text-slate-400">المعلمة المشرفة:</p>
+                    <p class="font-bold text-emerald-400 text-sm">غدير عمر</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xl mx-auto mb-1">
+                        <i class="fa-solid fa-ribbon"></i>
+                    </div>
+                    <span class="text-slate-400 text-[10px]">ختم التميز الرقمي</span>
+                </div>
+                <div class="text-left">
+                    <p class="text-slate-400">المؤسسة التعليمية:</p>
+                    <p class="font-bold text-slate-200">أكاديمية الرواد الدولية</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="no-print pt-4 flex justify-center gap-4">
+                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl text-sm flex items-center">
+                    <i class="fa-solid fa-print ml-2"></i> طباعة الشهادة / حفظ PDF
+                </button>
+                <button onclick="resetGame()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 px-6 rounded-xl text-sm flex items-center">
+                    <i class="fa-solid fa-rotate-right ml-2"></i> إعادة التحدي
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        // State variables
+        let totalScore = 0;
+        let completedLevels = { 1: false, 2: false, 3: false };
+
+        // Fullscreen Toggle
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`خطأ في تفعيل ملء الشاشة: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Level Switching Tab Logic
+        function switchLevel(lvlNum) {
+            document.querySelectorAll('.level-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`level-${lvlNum}`).classList.remove('hidden');
+
+            document.querySelectorAll('.lvl-btn').forEach((btn, idx) => {
+                if (idx + 1 === lvlNum) {
+                    btn.className = "lvl-btn bg-brand-600 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center transition shadow-lg";
+                } else {
+                    btn.className = "lvl-btn bg-slate-800 text-slate-400 hover:text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center transition";
+                }
+            });
+        }
+
+        // Drag and Drop Logic Level 1
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("target", ev.target.getAttribute('data-target'));
+        }
+
+        function drop(ev, expectedTarget) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            const dataId = ev.dataTransfer.getData("text");
+            const draggedTarget = ev.dataTransfer.getData("target");
+            const draggedElement = document.getElementById(dataId);
+
+            if (draggedTarget === expectedTarget) {
+                ev.currentTarget.innerHTML = '';
+                ev.currentTarget.appendChild(draggedElement);
+                ev.currentTarget.classList.remove('border-dashed', 'border-slate-600');
+                ev.currentTarget.classList.add('border-solid', 'border-emerald-500', 'bg-emerald-950/30');
+            } else {
+                showModal(false, 'محاولة غير صحيحة', 'هذا الجزء لا يتطابق مع وظيفة هذه الخانة في عنوان البريد الإلكتروني. راجع مثال: Ahmad_Ali@gmail.com');
+            }
+        }
+
+        // Level 1 Terms Verification
+        function checkLevel1Terms() {
+            let scoreAdd = 0;
+            // Check Drag Drop items in zones
+            const z1 = document.getElementById('zone-user-name').contains(document.getElementById('part-email'));
+            const z2 = document.getElementById('zone-symbol').contains(document.getElementById('part-at'));
+            const z3 = document.getElementById('zone-provider').contains(document.getElementById('part-provider'));
+            const z4 = document.getElementById('zone-domain').contains(document.getElementById('part-domain'));
+
+            const emailPartsCorrect = z1 && z2 && z3 && z4;
+
+            // Check Terms Selects
+            const m1 = document.getElementById('match-term-1').value === 'correct';
+            const m2 = document.getElementById('match-term-2').value === 'correct';
+            const m3 = document.getElementById('match-term-3').value === 'correct';
+
+            if (emailPartsCorrect && m1 && m2 && m3) {
+                if (!completedLevels[1]) {
+                    totalScore += 30;
+                    completedLevels[1] = true;
+                    updateScoreDisplay();
+                }
+                showModal(true, 'أحسنت بطل/بطلة أباديمية الرواد! 🌟', 'لقد أتقنت تفكيك أجزاء البريد الإلكتروني والمفاهيم الرئيسية بنجاح. يمكنك الآن الانتقال للمستوى الثاني (المتوسط).');
+                setTimeout(() => switchLevel(2), 2000);
+            } else {
+                showModal(false, 'تحتاج لبعض المراجعة 🧐', 'يرجى التأكد من اختيار التعريفات المناسبة وإسقاط جميع أجزاء البريد الإلكتروني في الخانات المخصصة لها بشكل صحيح.');
+            }
+        }
+
+        // Level 2 Sorting Drag Drop
+        function dragCategory(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("cat", ev.target.getAttribute('data-cat'));
+        }
+
+        function dropCategory(ev, expectedCat) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            const dataId = ev.dataTransfer.getData("text");
+            const draggedCat = ev.dataTransfer.getData("cat");
+            const draggedElement = document.getElementById(dataId);
+
+            if (draggedCat === expectedCat) {
+                ev.currentTarget.appendChild(draggedElement);
+            } else {
+                showModal(false, 'تصنيف غير صحيح', 'هذا العنصر لا ينتمي إلى هذه المجموعة وفقاً لما ورد في الدرس. حاول مرة أخرى!');
+            }
+        }
+
+        function checkLevel2Sorting() {
+            const pool = document.getElementById('sort-items-pool');
+            if (pool.children.length === 0) {
+                if (!completedLevels[2]) {
+                    totalScore += 35;
+                    completedLevels[2] = true;
+                    updateScoreDisplay();
+                }
+                showModal(true, 'عمل ممتاز ورائع! 🚀', 'تم تصنيف جميع البروتوكولات ومزايا التواصل ومنصات التعلم عن بعد والحوسبة السحابية بنجاح.');
+                setTimeout(() => switchLevel(3), 2000);
+            } else {
+                showModal(false, 'بطاقات متبقية!', 'ما زالت هناك بطاقات لم تقم بتصنيفها ونقلها إلى خاناتها المناسبة.');
+            }
+        }
+
+        // Level 3 Advanced Check
+        function checkLevel3Advanced() {
+            const q1Pass = document.querySelector('input[name="pass-choice"]:checked')?.value === 'correct';
+            const q2Net = document.querySelector('input[name="net-choice"]:checked')?.value === 'correct';
+
+            const e1 = document.getElementById('ethics-1').value === 'true';
+            const e2 = document.getElementById('ethics-2').value === 'true';
+            const e3 = document.getElementById('ethics-3').value === 'true';
+            const e4 = document.getElementById('ethics-4').value === 'true';
+
+            if (q1Pass && q2Net && e1 && e2 && e3 && e4) {
+                if (!completedLevels[3]) {
+                    totalScore += 35;
+                    completedLevels[3] = true;
+                    updateScoreDisplay();
+                }
+                openCertificate();
+            } else {
+                showModal(false, 'إجابات تحتاج تصحيح ⚠️', 'تأكد من اختيار كلمة المرور المحكمة، والشبكة المحلية (LAN)، وتقييم كافة السلوكيات الرقمية بشكل صحيح.');
+            }
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-display').innerText = totalScore;
+        }
+
+        function showModal(isSuccess, title, bodyText) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('modal-icon');
+            const titleEl = document.getElementById('modal-title');
+            const bodyEl = document.getElementById('modal-body');
+
+            if (isSuccess) {
+                icon.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                titleEl.className = "text-xl font-bold text-emerald-400";
+            } else {
+                icon.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40";
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                titleEl.className = "text-xl font-bold text-rose-400";
+            }
+
+            titleEl.innerText = title;
+            bodyEl.innerText = bodyText;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openCertificate() {
+            document.getElementById('cert-final-score').innerText = totalScore;
+            const certModal = document.getElementById('certificate-modal');
+            certModal.classList.remove('hidden');
+            certModal.classList.add('flex');
+        }
+
+        function closeCertificate() {
+            const certModal = document.getElementById('certificate-modal');
+            certModal.classList.add('hidden');
+            certModal.classList.remove('flex');
+        }
+
+        function updateCertName() {
+            const val = document.getElementById('student-name-input').value;
+            document.getElementById('cert-student-name').innerText = val.trim() !== "" ? val : "[ اسم الطالب/الطالبة ]";
+        }
+
+        function resetGame() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
